@@ -1,0 +1,1 @@
+function requireNumbers(keys){return function(req,res,next){for(const k of keys){const v=Number(req.query[k]);if(Number.isNaN(v)){res.status(400).json({error:k});return;}}next();};}module.exports={requireNumbers};

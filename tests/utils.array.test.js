@@ -1,0 +1,1 @@
+const a=require('../server/utils/array');test('uniq',()=>{expect(a.uniq([1,1,2,3])).toEqual([1,2,3])});test('median',()=>{expect(a.median([3,1,2])).toBe(2)});test('permutations',()=>{const p=a.permutations([1,2]);expect(p.length).toBe(2)});test('binary',()=>{expect(a.binarySearch([1,2,3,4],3)).toBe(2)});

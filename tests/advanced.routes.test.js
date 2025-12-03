@@ -1,0 +1,1 @@
+const request=require('supertest');const app=require('../server');test('factorial',async()=>{const r=await request(app).get('/adv/factorial?n=5');expect(r.status).toBe(200);expect(r.body.result).toBe(120)});test('gcd',async()=>{const r=await request(app).get('/adv/gcd?a=8&b=12');expect(r.status).toBe(200);expect(r.body.result).toBe(4)});
