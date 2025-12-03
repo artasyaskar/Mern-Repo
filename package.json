@@ -1,0 +1,22 @@
+{
+  "name": "mern-training-base",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Starter MERN-style repo for LLM training tasks with Jest-based testing.",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "test": "jest --runInBand",
+    "test:base": "jest --runInBand tests/base"
+  },
+  "keywords": ["mern", "training", "jest", "docker"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "4.21.1"
+  },
+  "devDependencies": {
+    "jest": "29.7.0",
+    "supertest": "7.0.0"
+  }
+}

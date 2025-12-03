@@ -1,0 +1,23 @@
+Project: MERN Training Base Repo
+
+Overview:
+This is a minimal MERN-style starter project designed to host 10 independent tasks for LLM training.
+- Backend: Node.js + Express (server/)
+- Frontend: Static HTML (client/) served by Express
+- Tests: Jest (tests/base and per-task tests under tasks/<task-id>/)
+
+Grading Workflow Compatibility:
+- Dockerfile uses node:20-alpine; ENTRYPOINT runs ./run_tests.sh
+- docker-compose.yaml passes TASK_ID and mounts the repo to /app
+- run_tests.sh accepts an optional [task-id] and runs base tests or task-specific tests
+
+Structure:
+- server/: Express app, routes, and utils
+- client/: Static frontend placeholder
+- tests/base/: Base test suite to verify environment
+- tasks/: Placeholder for task directories (each with task_description.txt, task_tests.js, task_diff.txt, run-tests.sh, docker-compose.yaml)
+
+How to run locally:
+- npm test
+- npm start (to run the server)
+- docker compose build && docker compose run --rm app ./run_tests.sh BASE
