@@ -1,35 +1,34 @@
 task_description: |
-  Task: Calendar intelligence — ISO weeks and business-day metrics
+  Task: Calendar intelligence - ISO weeks and business-day metrics
   Instructions:
-  Build new endpoints to compute ISO week info and date-range metrics with strict validation.
+  Create new endpoints that figure out ISO week info - while managing date range summaries - with strict validation inside. Rely on clear logic to make sure data matches expectations every round.
   Requirements (as tested):
   - POST /adv/date-metrics
     Body (JSON): {
-      "start": string in YYYY-MM-DD,
-      "end": string in YYYY-MM-DD,
-      "holidays": optional array of YYYY-MM-DD strings (may contain duplicates)
+      start: dates shown as 2023-10-15,
+      completion day: something written as 2023-12-31
+      Take holidays - skip extras; just write dates such as 2025-12-25, duplicates okay
     }
     Behavior:
-    - Validate inputs. Reject when:
-      - any field is missing or not a string (for required fields),
-      - dates do not match YYYY-MM-DD or are invalid calendar dates,
-      - start > end,
-      - holidays is provided but not an array of YYYY-MM-DD strings
-    - Compute and return JSON with keys:
-      - days_total: total number of days in the range inclusive
-      - business_days: number of weekdays (Mon–Fri) in the range, excluding any dates listed in holidays
-      - weeks_iso: unique ISO week identifiers covered by the range, e.g. ["2025-W01"], sorted ascending
-      - start_of_week: the Monday date (YYYY-MM-DD) of the ISO week containing start
-      - end_of_week: the Sunday date (YYYY-MM-DD) of the ISO week containing end
+    - Look at what's been added. Get rid of it if:
+      - dates don’t follow the year-month-day pattern, or simply can’t exist in any real calendar
+      start → end
+      vacation days displayed without being written out as YYYY-MM-DD
+      {"instruction": "Work out what's needed, then reply with a JSON containing these fields:"}
+    - d-days total means the full count of days from beginning to finish, including the first day as well as the last one
+    - business_days: counts weekdays Mon through Fri in the range, leaving out holiday-marked dates
+    - weeks_iso: a collection of unique ISO week labels across the period, such as ["2025-W01"], sorted starting from the oldest moving toward the newest
+    - start_of_week: it's the Monday (YYYY-MM-DD) from the ISO week containing start
+      end_of_week: Sunday’s day (YYYY-MM-DD), based on the ISO week holding end
 
   - GET /adv/iso-week
     Query: date=YYYY-MM-DD
     Behavior:
-    - Validate the date; if invalid, return 400.
-    - Respond with { "isoYear": number, "isoWeek": number, "label": "YYYY-Www" } using ISO-8601 week-numbering (weeks start on Monday).
+    Look at the date - if it’s off, return a 400.
+    { "isoYear": number, however "isoWeek": number, also "label": "YYYY-Www" } using ISO-8601 calendar - weeks begin each Monday.
 
   Notes:
-  - Only modify (when implementing): server/routes/advanced.js and server/utils/date.js. Keep logic well-tested and deterministic.
+  - Tweak this stuff: server/routes/advanced.js, also check server/utils/date.js. Keep things working right, don't break tests.
 
 difficulty: hard
 category: Feature
