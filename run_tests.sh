@@ -36,6 +36,25 @@ else
     sleep 0.2
   done
 
-  # Run pytest for the task
-  pytest -q "$PY_TEST_FILE"
+  # Ensure pytest available; if missing, attempt user-level install
+  if ! python3 - <<'PY'
+import sys
+try:
+    import pytest  # type: ignore
+    sys.exit(0)
+except Exception:
+    sys.exit(1)
+PY
+  then
+    echo "Installing pytest locally for current user..."
+    (python3 -m pip install --user --quiet pytest requests || pip3 install --user --quiet pytest requests) || true
+  fi
+
+  # Run pytest for the task (use python3 -m to avoid missing entrypoint issues)
+  if python3 -c "import pytest" 2>/dev/null; then
+    python3 -m pytest -q "$PY_TEST_FILE"
+  else
+    echo "pytest is not available. To run tasks deterministically, please use: docker compose run --rm app ./run_tests.sh ${TASK_ID}" 1>&2
+    exit 127
+  fi
 fi
