@@ -1,32 +1,30 @@
 task_description: |
-  Task:Build or adjust tricky numeric connections
+  Task: Implement and adjust advanced numeric endpoints with precise calculations
   Instructions:
-  Shift uneven sections till each step feels right. Adjust all parts while feedback improves.
-
   Requirements (as tested):
   - POST /adv/stats
-  - Body: { 'numbers': a list of number values, plus possibly "ddoo f", which might be a whole number }
-  - Check: make sure the list isn't empty, every entry’s a real number; when n minus ddof drops at or below zero → return 400 (ddof usually means 1).
-  {"mean": "average value", "median": "middle number when sorted", "mode": "most frequent number", "variance": "how spread out numbers are", "stddev": "square root of variance"}.
-  Variance or standard deviation? Pick sample stats - split by n minus ddof down below. Each config adjusts a bit; stays fluid, no junk, no repeats.
-  Numeric stability manages values near 1e9 - preventing breakdowns during wild calculations through smart safeguards. When things get shaky, adjustments happen instantly so results stay correct.
+    - Body: { 'numbers': array of numbers, 'ddof'?: integer } (ddof defaults to 1)
+    - Validate: non-empty array of finite numbers; return 400 if n - ddof <= 0
+    - Return JSON: { mean, median, mode, variance, stddev }
+    - Use sample statistics with denominator (n - ddof)
+    - Handle numeric stability for values up to 1e9
 
   - GET /adv/primes
-  - Give me a number n, start from any value - just make sure it's 2 at least - then decide your format, like json instead of csv.
-  - if you get a starting number: give back prime numbers between that start and n; otherwise list the ones from 2 up to n.
-  {"result":[1,2,3]}.
-  prime numbers: 2, later 3, right after 5, soon comes 7, not far behind is 11, just before 13, close by 17, nearby 19, moving on to 23, finally stops at 29.
-  Check the input - use whole numbers only. If start is bigger than n, return 400 instead.
-  - Speed test: once n reaches 20,000 with output as json, finishes under two seconds.
+    - Query: n (int), optional start (int ≥ 2), optional format in {json, csv}
+    - Return primes in [start, n] if start provided, else [2, n]
+    - format=json: { "result": number[] }
+    - format=csv: text/csv with header "prime" and one prime per line
+    - Validation: integers only; return 400 if start > n
+    - Performance: n=20000 with format=json must complete < 2s
 
   - GET /adv/gcd and GET /adv/lcm
-  Just stick to full numbers - skip anything with bits or pieces (like 400).
-  - Responses stay upbeat, much like how gcd(-8,12) results in 4; whereas lcm(-4,6) becomes 12.
+    - Inputs must be integers (return 400 for decimals)
+    - Results must be non-negative (e.g., gcd(-8,12)=4; lcm(-4,6)=12)
 
   Notes:
-  - Tweak just server/routes/advanced.js, yet sneak into server/services/calculator.js, then brush against server/middleware/validate.js
+  - Modify only: server/routes/advanced.js, server/services/calculator.js, server/middleware/validate.js
 
 difficulty: hard
 category: Feature
-tags: ["using Node together with Express while solving coding puzzles"]
+tags: [node, express, algorithms]
 parser_name: pytest
