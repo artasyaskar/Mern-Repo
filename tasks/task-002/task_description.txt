@@ -1,0 +1,35 @@
+task_description: |
+  Task: Implement robust quantile computation service
+  Instructions:
+  Build a new endpoint to compute quantiles with two methods and strict validation.
+  Requirements (as tested):
+  - POST /adv/quantiles
+    Body: {
+      "numbers": array of real, finite numbers (length >= 2),
+      "method": optional string in {"tukey", "linear"} (defaults to "tukey"),
+      "percentiles": optional array of integers in [0, 100] (defaults to [25, 50, 75])
+    }
+    Behavior:
+    - Validate payload strictly. Reject if:
+      - "numbers" missing, not an array, contains a non-finite number, or length < 2
+      - "method" not one of the accepted values
+      - "percentiles" contains values outside [0, 100] or non-integers
+    - Sort numbers ascending before calculations.
+    - method="tukey":
+      Use Tukey's median-of-halves rule.
+      For odd N, exclude the median from halves.
+      For even N, split evenly and compute medians.
+    - method="linear":
+      Use linear interpolation on the cumulative positions (inclusive definition),
+      where position p (0..100) maps to index i = (p/100)*(N-1) between adjacent elements.
+      Interpolate between floor(i) and ceil(i).
+    - Respond with JSON object mapping percentile strings to numeric values, e.g. {"25": 2, "50": 3, "75": 4}.
+
+  Notes:
+  - Only modify: server/routes/advanced.js, server/services/calculator.js, server/middleware/validate.js
+  - Keep performance reasonable and results numerically stable for large magnitudes.
+
+difficulty: hard
+category: Feature
+tags: [node, express, statistics]
+parser_name: pytest
