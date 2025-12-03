@@ -1,30 +1,30 @@
 task_description: |
-  Task: Implement and adjust advanced numeric endpoints
+  Task: Build connections using complex numbers - after that, adjust each one 
   Instructions:
-  Set up functions using complex numbers - then tweak accuracy through tight computations
+  Work with functions using complex numbers - tweak accuracy through thoughtful math steps
   Instructions:
   Requirements (as tested):
   - POST /adv/stats
-    Body: { 'numbers': a set of numeric entries, though 'ddof' may show up as an integer } - if missing, defaults to 1
-    1. Check that the list has real numbers, not blanks. 2. If n less ddof equals zero or below, give back 400.
-    {"average": 5.3, though the center point's actually 5; you'll see 4 pop up most often, how stretched it is comes out at 2.1, whereas usual gap from mean ends near 1.4}
-    Try different values - split them by n minus ddof
-    Deal with huge numbers safely - say, close to a billion, maybe even a bit more
+    Body: { 'numbers': certain numeric entries, whereas 'ddof' might show up as an integer } - if missing, defaults to 1
+    1. Check that every spot in the list has a real number, nothing blank. If n minus ddof drops to zero or less, send back 400.
+    {about 5.3 on average, but the center’s actually 5; 4 pops up most often, range stretches to roughly 2.1, whereas usual gap from mean sits near 1.4}
+    Try different figures - split them by n minus ddof
+    Deal with huge numbers safely - say close to a billion, maybe even slightly above
 
   - GET /adv/primes
-    - You hand me: n (just a whole number), maybe a starting point (anything from 2 onward), also choose the format - json or csv
-    Show prime numbers between [start, n] when start’s given; otherwise list them from [2, n]
+    You hand me: n (just a whole number), maybe where to begin (anything from 2 onward), then choose the format - json or csv
+    Show prime numbers from [start, n] when start's given - else show them from [2, n]
     {"result": [1, 2, 3]}
-    "top" but 4 3 6 8 10 yet
-    - Check numbers: use whole digits only; send back 400 if start goes past n
-    - Test how fast it runs: if n hits twenty thousand using json info, wraps up faster than two seconds
+    top yet 4 3 6 8 10 anyway
+    Check numbers: use whole digits only; send back 400 if total goes past n
+    - See how fast it is: once n hits twenty thousand using json info, wraps up in less than two seconds
 
   - GET /adv/gcd and GET /adv/lcm
-    - Inputs gotta be whole numbers - toss back 400 if anything’s off, but test every value upfront before replying
-    No negative results accepted - like how gcd(-8,12) gives 4; lcm(-4,6) still comes out 12
+    - Need whole numbers only – send back 400 if off; test every number ahead of replying
+    No bad results here - grab gcd(-8,12), that gives 4; when one's minus, lcm(-4,6) still hits 12
 
   Notes:
-  - Switch just: server/routes/advanced.js, when upgrading server/services/calculator.js - also tweak server/middleware/validate.js
+  - Switch just: server/routes/advanced.js, when tweaking server/services/calculator.js - remember to update server/middleware/validate.js
 
 difficulty: hard
 category: Feature
