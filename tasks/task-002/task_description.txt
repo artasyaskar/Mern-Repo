@@ -4,14 +4,14 @@ task_description: |
   Create a fresh endpoint figuring out quantiles through dual methods - while enforcing tight checks.
   Requirements (as tested):
   - POST /adv/quantiles
-    Body: {
-      digits: a group of numbers – requires no fewer than two items
-      method: a string set to "tukey" or "linear" – it's optional, defaults to "tukey" when missing
-      percentiles: pick whole numbers from 0 up to 100 – goes with [25, 50, 75] if not told otherwise
+    Body (JSON): {
+      "numbers": array of numeric values, length >= 2,
+      "method": optional string, one of {"tukey", "linear"}, defaults to "tukey",
+      "percentiles": optional array of integers in [0, 100], defaults to [25, 50, 75]
     }
     Behavior:
-    - Check the details bit by bit. Leave it behind when:
-      If no number's given, it doesn't count as a list - includes non-numbers, or simply misses enough items
+    - Validate input strictly. Reject when:
+      - "numbers" is missing, not an array, contains non-numeric entries, or has length < 2
     - "method" isn't part of the allowed terms
     - "percentiles" includes numbers below zero or above hundred, also items that are not whole numbers
     Line up numbers from smallest to largest before you use them.
@@ -23,7 +23,7 @@ task_description: |
       Slide through each spot using a straightforward mix - hit every point. Link them with a smooth path, no breaks or skips.
       At spot p - ranging from 0 up to 100 - the value of i is about (p divided by 100) times (N minus 1), sitting somewhere close to neighboring items.
       Step up from floor(i) toward ceil(i), easing through every stage along the way.
-    {"25": 2, "50": 3, "75": 4}.
+    Response (JSON): {"25": 2, "50": 3, "75": 4}
 
   Notes:
   - Focus your changes in server/routes/advanced.js and server/services/calculator.js. You may handle validation inline in the route; updating middleware is optional and not required by tests.
