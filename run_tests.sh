@@ -22,7 +22,14 @@ else
   # If the task provides a diff, apply it so a null agent can pass
   DIFF_FILE="tasks/${TASK_ID}/task_diff.txt"
   APPLIED=0
-  if [ -f "$DIFF_FILE" ]; then
+  PRECHANGES=0
+  # Detect if repo already has edits (oracle/agent path)
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+      PRECHANGES=1
+    fi
+  fi
+  if [ -f "$DIFF_FILE" ] && [ "$PRECHANGES" -eq 0 ]; then
     echo "Applying task diff: $DIFF_FILE"
     # Normalize potential CRLF to LF to avoid patch failures
     if command -v dos2unix >/dev/null 2>&1; then dos2unix -q "$DIFF_FILE" || true; fi
@@ -61,6 +68,8 @@ else
         fi
       fi
     fi
+  elif [ -f "$DIFF_FILE" ] && [ "$PRECHANGES" -ne 0 ]; then
+    echo "Detected pre-existing changes in repo; skipping diff apply." >&2
   fi
   if [ ! -f "$DIFF_FILE" ]; then
     echo "No diff file found at $DIFF_FILE" 1>&2
@@ -68,13 +77,11 @@ else
     ls -la "tasks/${TASK_ID}" || true
   fi
 
-  # Verify only if no diff was applied (avoid false negatives for tasks with different tokens)
-  if [ "$APPLIED" -eq 0 ]; then
-    # Heuristic: ensure at least advanced.js exists (repo baseline) — otherwise report
-    if [ ! -f server/routes/advanced.js ]; then
-      echo "Expected server/routes/advanced.js to exist; repository baseline mismatch." 1>&2
-      exit 3
-    fi
+  # If no pre-existing changes and diff was not applied, fail early to surface patch issues for null agent
+  if [ "$PRECHANGES" -eq 0 ] && [ "$APPLIED" -eq 0 ]; then
+    echo "Task diff does not appear applied and no pre-existing changes detected." 1>&2
+    echo "Hint: regenerate tasks/${TASK_ID}/task_diff.txt against a clean baseline and rerun." 1>&2
+    exit 3
   fi
 
   PY_TEST_FILE="tasks/${TASK_ID}/task_tests.py"
