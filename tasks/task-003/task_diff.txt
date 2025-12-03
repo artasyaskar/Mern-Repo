@@ -1,0 +1,135 @@
+diff --git a/server/routes/advanced.js b/server/routes/advanced.js
+index 0144b18..87eecbd 100644
+--- a/server/routes/advanced.js
++++ b/server/routes/advanced.js
+@@ -1 +1,122 @@
+-const express=require('express');const {requireNumbers}=require('../middleware/validate');const {factorial,fibonacci,gcd,lcm,primesUpTo}=require('../services/calculator');const router=express.Router();router.get('/factorial',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:factorial(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/fibonacci',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:fibonacci(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/gcd',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:gcd(a,b)})});router.get('/lcm',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:lcm(a,b)})});router.get('/primes',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);res.json({result:primesUpTo(n)})});module.exports=router;
++const express = require('express');
++const { requireNumbers } = require('../middleware/validate');
++const { factorial, fibonacci, gcd, lcm, primesUpTo } = require('../services/calculator');
++
++const router = express.Router();
++
++// Helpers for dates (inline to keep scope local to this route file)
++function pad(n) { return n < 10 ? '0' + n : String(n); }
++function formatYMD(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
++function parseYMDStrict(s) {
++  if (typeof s !== 'string') return null;
++  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
++  if (!m) return null;
++  const y = Number(m[1]);
++  const mm = Number(m[2]);
++  const dd = Number(m[3]);
++  const dt = new Date(y, mm - 1, dd);
++  if (isNaN(dt.getTime())) return null;
++  // Ensure no JS rollover: reformat must equal input
++  if (formatYMD(dt) !== s) return null;
++  return dt;
++}
++function startOfDay(d) { const dt = new Date(d); dt.setHours(0,0,0,0); return dt; }
++function startOfISOWeek(d) { const dt = startOfDay(d); const wd = (dt.getDay() + 6) % 7; dt.setDate(dt.getDate() - wd); return dt; }
++function endOfISOWeek(d) { const s = startOfISOWeek(d); const out = new Date(s); out.setDate(s.getDate() + 6); out.setHours(23,59,59,999); return out; }
++function isoWeekParts(d) {
++  const dt = startOfDay(d);
++  const th = new Date(dt);
++  th.setDate(dt.getDate() + 3 - ((dt.getDay() + 6) % 7));
++  const isoYear = th.getFullYear();
++  const jan4 = new Date(isoYear, 0, 4);
++  const week1 = startOfISOWeek(jan4);
++  const week = Math.floor((startOfISOWeek(dt) - week1) / (7 * 24 * 60 * 60 * 1000)) + 1;
++  return { isoYear, isoWeek: week };
++}
++function iterateDaysInclusive(a, b, cb) {
++  let cur = startOfDay(a);
++  const end = startOfDay(b);
++  while (cur.getTime() <= end.getTime()) {
++    cb(cur);
++    const next = new Date(cur); next.setDate(cur.getDate() + 1); cur = next;
++  }
++}
++function isWeekday(d) { const wd = d.getDay(); return wd >= 1 && wd <= 5; }
++
++// Existing numeric/algorithm endpoints
++router.get('/factorial', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  try { res.json({ result: factorial(n) }); }
++  catch (e) { res.status(400).json({ error: e.message }); }
++});
++
++router.get('/fibonacci', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  try { res.json({ result: fibonacci(n) }); }
++  catch (e) { res.status(400).json({ error: e.message }); }
++});
++
++router.get('/gcd', requireNumbers(['a','b']), (req, res) => {
++  const a = Number(req.query.a);
++  const b = Number(req.query.b);
++  res.json({ result: gcd(a, b) });
++});
++
++router.get('/lcm', requireNumbers(['a','b']), (req, res) => {
++  const a = Number(req.query.a);
++  const b = Number(req.query.b);
++  res.json({ result: lcm(a, b) });
++});
++
++router.get('/primes', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  res.json({ result: primesUpTo(n) });
++});
++
++// New: GET /adv/iso-week
++router.get('/iso-week', (req, res) => {
++  const s = req.query.date;
++  const dt = parseYMDStrict(String(s || ''));
++  if (!dt) { res.status(400).json({ error: 'date' }); return; }
++  const { isoYear, isoWeek } = isoWeekParts(dt);
++  const label = `${isoYear}-W${pad(isoWeek)}`;
++  res.json({ isoYear, isoWeek, label });
++});
++
++// New: POST /adv/date-metrics
++router.post('/date-metrics', (req, res) => {
++  const body = req.body || {};
++  const s = parseYMDStrict(body.start);
++  const e = parseYMDStrict(body.end);
++  if (!s || !e) { res.status(400).json({ error: 'start/end' }); return; }
++  if (startOfDay(s).getTime() > startOfDay(e).getTime()) { res.status(400).json({ error: 'range' }); return; }
++
++  let holidays = body.holidays;
++  if (holidays !== undefined) {
++    if (!Array.isArray(holidays)) { res.status(400).json({ error: 'holidays' }); return; }
++    for (const h of holidays) { if (!parseYMDStrict(h)) { res.status(400).json({ error: 'holidays' }); return; } }
++  } else {
++    holidays = [];
++  }
++
++  const msPerDay = 24*60*60*1000;
++  const days_total = Math.round((startOfDay(e) - startOfDay(s)) / msPerDay) + 1;
++
++  const holSet = new Set(holidays);
++  let business_days = 0;
++  const weeks = new Set();
++  iterateDaysInclusive(s, e, (dt) => {
++    const ymd = formatYMD(dt);
++    if (isWeekday(dt) && !holSet.has(ymd)) business_days++;
++    const { isoYear, isoWeek } = isoWeekParts(dt);
++    weeks.add(`${isoYear}-W${pad(isoWeek)}`);
++  });
++  const weeks_iso = Array.from(weeks).sort();
++
++  const start_of_week = formatYMD(startOfISOWeek(s));
++  const end_of_week = formatYMD(endOfISOWeek(e));
++
++  res.json({ days_total, business_days, weeks_iso, start_of_week, end_of_week });
++});
++
++module.exports = router;
+diff --git a/server/utils/date.js b/server/utils/date.js
+index 7a3cb6f..2572e87 100644
+--- a/server/utils/date.js
++++ b/server/utils/date.js
+@@ -1 +1 @@
+-function pad(n){return n<10?'0'+n:String(n);}function formatISO(d){const dt=new Date(d);return dt.toISOString();}function formatYMD(d){const dt=new Date(d);return dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());}function formatHMS(d){const dt=new Date(d);return pad(dt.getHours())+':'+pad(dt.getMinutes())+':'+pad(dt.getSeconds());}function addDays(d,n){const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt;}function addMonths(d,n){const dt=new Date(d);dt.setMonth(dt.getMonth()+n);return dt;}function addYears(d,n){const dt=new Date(d);dt.setFullYear(dt.getFullYear()+n);return dt;}function startOfDay(d){const dt=new Date(d);dt.setHours(0,0,0,0);return dt;}function endOfDay(d){const dt=new Date(d);dt.setHours(23,59,59,999);return dt;}function diffDays(a,b){const ms=24*60*60*1000;const d1=startOfDay(a).getTime();const d2=startOfDay(b).getTime();return Math.round((d2-d1)/ms);}function isLeapYear(y){return (y%4===0&&y%100!==0)||y%400===0;}function daysInMonth(y,m){return new Date(y,m,0).getDate();}function parseYMD(s){const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return null;const [_,y,mm,dd]=m;const dt=new Date(Number(y),Number(mm)-1,Number(dd));return isNaN(dt.getTime())?null:dt;}function isValidDate(d){return d instanceof Date&&!isNaN(d.getTime());}function toTimezone(d,offsetMinutes){const dt=new Date(d);const local=dt.getTime()-dt.getTimezoneOffset()*60000;return new Date(local+offsetMinutes*60000);}module.exports={pad,formatISO,formatYMD,formatHMS,addDays,addMonths,addYears,startOfDay,endOfDay,diffDays,isLeapYear,daysInMonth,parseYMD,isValidDate,toTimezone};
++	function pad(n){return n<10?'0'+n:String(n);}function formatISO(d){const dt=new Date(d);return dt.toISOString();}function formatYMD(d){const dt=new Date(d);return dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());}function formatHMS(d){const dt=new Date(d);return pad(dt.getHours())+':'+pad(dt.getMinutes())+':'+pad(dt.getSeconds());}function addDays(d,n){const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt;}function addMonths(d,n){const dt=new Date(d);dt.setMonth(dt.getMonth()+n);return dt;}function addYears(d,n){const dt=new Date(d);dt.setFullYear(dt.getFullYear()+n);return dt;}function startOfDay(d){const dt=new Date(d);dt.setHours(0,0,0,0);return dt;}function endOfDay(d){const dt=new Date(d);dt.setHours(23,59,59,999);return dt;}function diffDays(a,b){const ms=24*60*60*1000;const d1=startOfDay(a).getTime();const d2=startOfDay(b).getTime();return Math.round((d2-d1)/ms);}function isLeapYear(y){return (y%4===0&&y%100!==0)||y%400===0;}function daysInMonth(y,m){return new Date(y,m,0).getDate();}function parseYMD(s){const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return null;const[_,y,mm,dd]=m;const dt=new Date(Number(y),Number(mm)-1,Number(dd));return isNaN(dt.getTime())?null:dt;}function isValidDate(d){return d instanceof Date&&!isNaN(d.getTime());}function toTimezone(d,offsetMinutes){const dt=new Date(d);const local=dt.getTime()-dt.getTimezoneOffset()*60000;return new Date(local+offsetMinutes*60000);}function startOfISOWeek(d){const dt=startOfDay(d);const wd=(dt.getDay()+6)%7;dt.setDate(dt.getDate()-wd);return dt;}function endOfISOWeek(d){const s=startOfISOWeek(d);return new Date(s.getFullYear(),s.getMonth(),s.getDate()+6,23,59,59,999);}function isoWeek(d){const dt=startOfDay(d);const th=new Date(dt);th.setDate(dt.getDate()+3-((dt.getDay()+6)%7));const isoYear=th.getFullYear();const jan4=new Date(isoYear,0,4);const week1=startOfISOWeek(jan4);const msPerDay=24*60*60*1000;const week=Math.floor((startOfISOWeek(dt)-week1)/msPerDay/7)+1;return{isoYear:isoYear,isoWeek:week};}function iterateDaysInclusive(a,b,cb){let cur=startOfDay(a);const end=startOfDay(b);while(cur.getTime()<=end.getTime()){cb(cur);cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()+1);} }function isWeekday(d){const wd=d.getDay();return wd>=1&&wd<=5;}function businessDaysInRange(a,b,hol){const set=new Set((hol||[]).map(String));let count=0;iterateDaysInclusive(a,b,(dt)=>{const ymd=formatYMD(dt);if(isWeekday(dt)&&!set.has(ymd))count++;});return count;}module.exports={pad,formatISO,formatYMD,formatHMS,addDays,addMonths,addYears,startOfDay,endOfDay,diffDays,isLeapYear,daysInMonth,parseYMD,isValidDate,toTimezone,startOfISOWeek,endOfISOWeek,isoWeek,iterateDaysInclusive,isWeekday,businessDaysInRange};
