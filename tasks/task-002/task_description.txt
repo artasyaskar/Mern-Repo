@@ -1,33 +1,33 @@
 task_description: |
   Task: Implement robust quantile computation service
   Instructions:
-  Create a new endpoint that figures out quantiles in two ways - while running strict validations.
+  Create a fresh endpoint figuring out quantiles through dual methods - while enforcing tight checks.
   Requirements (as tested):
   - POST /adv/quantiles
     Body: {
-      numbers: a set of digits - needs at least two entries
-      method": a string that’s either "tuque" or "linear" - optional, picks "tukey" if blank
-      percentiles: a choice of full numbers between 0 and 100 – picks [25, 50, 75] by default
+      digits: a group of numbers – requires no fewer than two items
+      method: a string set to "tukey" or "linear" – it's optional, defaults to "tukey" when missing
+      percentiles: pick whole numbers from 0 up to 100 – goes with [25, 50, 75] if not told otherwise
     }
     Behavior:
-    - Go over the info slowly. Ditch it if:
-      if there’s no figure provided, it’s not counted as a list - contains something non-numeric, or just lacks enough entries
-    - "technique" doesn't fit the list of what's accepted
-    - "percentiles" covers values outside [0, 100] or entries that aren’t integers
-    Arrange digits starting from the tiniest up to the biggest prior to using them.
+    - Check the details bit by bit. Leave it behind when:
+      If no number's given, it doesn't count as a list - includes non-numbers, or simply misses enough items
+    - "method" isn't part of the allowed terms
+    - "percentiles" includes numbers below zero or above hundred, also items that are not whole numbers
+    Line up numbers from smallest to largest before you use them.
     - method="tukey":
-      Apply Tukey’s method - split data, then find medians at each half.
-      If N is odd, skip the middle digit when splitting both parts.
-      If N is even, split it right in half - then locate the two middle values.
+      Use Tukey’s approach - break up the data, then grab the middle value from each part.
+      If N’s odd, leave the middle number out when you split it into two sides.
+      If N’s even, cut it straight down the middle - find the pair of center numbers next.
     - method="linear":
-      Move across all positions by following a direct blend - include every dot. Use a line that connects them without gaps or jumps.
-      At position p (0 to 100), the index is roughly i = (p/100)(N−1), found between nearby elements.
-      Move up from floor(i) to ceil(i), shifting gradually through each level.
+      Slide through each spot using a straightforward mix - hit every point. Link them with a smooth path, no breaks or skips.
+      At spot p - ranging from 0 up to 100 - the value of i is about (p divided by 100) times (N minus 1), sitting somewhere close to neighboring items.
+      Step up from floor(i) toward ceil(i), easing through every stage along the way.
     {"25": 2, "50": 3, "75": 4}.
 
   Notes:
-  - Simply adjust: server/routes/advanced.js, while updating server/services/calculator.js, then touch server/middleware/validate.js
-  Keep things moving smoothly when dealing with large amounts - results hold strong, no hiccups or lagging behind.
+  - Just tweak: server/routes/advanced.js, after that update server/services/calculator.js, also give server/middleware/validate.js a quick edit
+  Keep things running fine with big loads - results stay solid, no stumbles or slowing down.
 
 difficulty: hard
 category: Feature
