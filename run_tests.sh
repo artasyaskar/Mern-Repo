@@ -24,23 +24,29 @@ else
     # Normalize the TASK_ID to digits-only token and lowercase id
     ID_LOWER=$(printf "%s" "$TASK_ID" | tr '[:upper:]' '[:lower:]')
     ID_DIGITS=$(printf "%s" "$ID_LOWER" | tr -cd '0-9')
-    CANDIDATES=( $(ls -1d tasks/*/task_diff.txt 2>/dev/null || true) )
+    ID_NORM=$(printf "%s" "$ID_LOWER" | tr -d '_-')
+    CANDIDATES=$(ls -1d tasks/*/task_diff.txt 2>/dev/null || true)
     BEST=""
     MATCHES=0
-    for f in "${CANDIDATES[@]}"; do
+    for f in $CANDIDATES; do
       d=$(dirname "$f")
       base=$(basename "$d")
       base_lower=$(printf "%s" "$base" | tr '[:upper:]' '[:lower:]')
       base_digits=$(printf "%s" "$base_lower" | tr -cd '0-9')
-      if [ "$base_lower" = "$ID_LOWER" ] || [ "$base_digits" = "$ID_DIGITS" ] || echo "$base_lower" | grep -Eq "^${ID_LOWER}$|^${ID_LOWER//[-_]/}$"; then
+      base_norm=$(printf "%s" "$base_lower" | tr -d '_-')
+      if [ "$base_lower" = "$ID_LOWER" ] || [ "$base_digits" = "$ID_DIGITS" ] || [ "$base_norm" = "$ID_NORM" ]; then
         BEST="$f"
         MATCHES=$((MATCHES+1))
       fi
     done
     if [ "$MATCHES" = "1" ]; then
       DIFF_FILE="$BEST"
-    elif [ "${#CANDIDATES[@]}" = "1" ]; then
-      DIFF_FILE="${CANDIDATES[0]}"
+    else
+      # If exactly one candidate exists, use it
+      set -- $CANDIDATES
+      if [ "$#" = "1" ]; then
+        DIFF_FILE="$1"
+      fi
     fi
   fi
   APPLIED=0
