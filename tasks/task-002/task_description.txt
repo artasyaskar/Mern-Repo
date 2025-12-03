@@ -1,33 +1,33 @@
 task_description: |
   Task: Implement robust quantile computation service
   Instructions:
-  Build a new endpoint to compute quantiles with two methods and strict validation.
+  Create a new endpoint that figures out quantiles in two ways - while running strict validations.
   Requirements (as tested):
   - POST /adv/quantiles
     Body: {
-      "numbers": array of real, finite numbers (length >= 2),
-      "method": optional string in {"tukey", "linear"} (defaults to "tukey"),
-      "percentiles": optional array of integers in [0, 100] (defaults to [25, 50, 75])
+      numbers: a set of digits - needs at least two entries
+      method": a string that’s either "tuque" or "linear" - optional, picks "tukey" if blank
+      percentiles: a choice of full numbers between 0 and 100 – picks [25, 50, 75] by default
     }
     Behavior:
-    - Validate payload strictly. Reject if:
-      - "numbers" missing, not an array, contains a non-finite number, or length < 2
-      - "method" not one of the accepted values
-      - "percentiles" contains values outside [0, 100] or non-integers
-    - Sort numbers ascending before calculations.
+    - Go over the info slowly. Ditch it if:
+      if there’s no figure provided, it’s not counted as a list - contains something non-numeric, or just lacks enough entries
+    - "technique" doesn't fit the list of what's accepted
+    - "percentiles" covers values outside [0, 100] or entries that aren’t integers
+    Arrange digits starting from the tiniest up to the biggest prior to using them.
     - method="tukey":
-      Use Tukey's median-of-halves rule.
-      For odd N, exclude the median from halves.
-      For even N, split evenly and compute medians.
+      Apply Tukey’s method - split data, then find medians at each half.
+      If N is odd, skip the middle digit when splitting both parts.
+      If N is even, split it right in half - then locate the two middle values.
     - method="linear":
-      Use linear interpolation on the cumulative positions (inclusive definition),
-      where position p (0..100) maps to index i = (p/100)*(N-1) between adjacent elements.
-      Interpolate between floor(i) and ceil(i).
-    - Respond with JSON object mapping percentile strings to numeric values, e.g. {"25": 2, "50": 3, "75": 4}.
+      Move across all positions by following a direct blend - include every dot. Use a line that connects them without gaps or jumps.
+      At position p (0 to 100), the index is roughly i = (p/100)(N−1), found between nearby elements.
+      Move up from floor(i) to ceil(i), shifting gradually through each level.
+    {"25": 2, "50": 3, "75": 4}.
 
   Notes:
-  - Only modify: server/routes/advanced.js, server/services/calculator.js, server/middleware/validate.js
-  - Keep performance reasonable and results numerically stable for large magnitudes.
+  - Simply adjust: server/routes/advanced.js, while updating server/services/calculator.js, then touch server/middleware/validate.js
+  Keep things moving smoothly when dealing with large amounts - results hold strong, no hiccups or lagging behind.
 
 difficulty: hard
 category: Feature

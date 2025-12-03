@@ -93,3 +93,14 @@ def test_quantiles_tukey_even_includes_split_halves():
     # Sorted [1,2,3,4,5,6]; halves include 3 elements each: lower [1,2,3], upper [4,5,6]
     # Q1=2, Q2=3.5, Q3=5
     assert data == {"25": 2, "50": 3.5, "75": 5}
+
+
+def test_quantiles_invalid_method_rejected():
+    """quantiles: invalid 'method' value should return 400"""
+    payload = {
+        "numbers": [1, 2, 3, 4],
+        "method": "median",  # invalid
+        "percentiles": [25, 50, 75],
+    }
+    r = requests.post(f"{BASE}/adv/quantiles", json=payload, timeout=5)
+    assert r.status_code == 400
