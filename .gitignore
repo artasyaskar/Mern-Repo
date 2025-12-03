@@ -3,3 +3,4 @@ coverage/
 .nyc_output/
 .DS_Store
 .env
+tasks/task-001/__pycache__
