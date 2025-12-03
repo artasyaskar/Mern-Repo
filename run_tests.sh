@@ -19,6 +19,30 @@ else
 
   # If the task provides a diff, apply it so a null agent can pass
   DIFF_FILE="tasks/${TASK_ID}/task_diff.txt"
+  # Resolve generically when not found (support task-###, task_###, etc.)
+  if [ ! -f "$DIFF_FILE" ]; then
+    # Normalize the TASK_ID to digits-only token and lowercase id
+    ID_LOWER=$(printf "%s" "$TASK_ID" | tr '[:upper:]' '[:lower:]')
+    ID_DIGITS=$(printf "%s" "$ID_LOWER" | tr -cd '0-9')
+    CANDIDATES=( $(ls -1d tasks/*/task_diff.txt 2>/dev/null || true) )
+    BEST=""
+    MATCHES=0
+    for f in "${CANDIDATES[@]}"; do
+      d=$(dirname "$f")
+      base=$(basename "$d")
+      base_lower=$(printf "%s" "$base" | tr '[:upper:]' '[:lower:]')
+      base_digits=$(printf "%s" "$base_lower" | tr -cd '0-9')
+      if [ "$base_lower" = "$ID_LOWER" ] || [ "$base_digits" = "$ID_DIGITS" ] || echo "$base_lower" | grep -Eq "^${ID_LOWER}$|^${ID_LOWER//[-_]/}$"; then
+        BEST="$f"
+        MATCHES=$((MATCHES+1))
+      fi
+    done
+    if [ "$MATCHES" = "1" ]; then
+      DIFF_FILE="$BEST"
+    elif [ "${#CANDIDATES[@]}" = "1" ]; then
+      DIFF_FILE="${CANDIDATES[0]}"
+    fi
+  fi
   APPLIED=0
   PRECHANGES=0
   # Detect if targeted source files already modified (scope only to 3 files)
