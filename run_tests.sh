@@ -1,5 +1,11 @@
 #!/bin/sh
 set -eu
+# Normalize invocation: if the first arg is the script name (due to ENTRYPOINT + explicit call), drop it
+case "${1-}" in
+  ./run_tests.sh|run_tests.sh)
+    shift
+    ;;
+esac
 TASK_ID="${1:-BASE}"
 
 if [ "$TASK_ID" = "BASE" ]; then
@@ -15,8 +21,11 @@ else
 
   # If the task provides a diff, apply it so a null agent can pass
   DIFF_FILE="tasks/${TASK_ID}/task_diff.txt"
+  APPLIED=0
   if [ -f "$DIFF_FILE" ]; then
     echo "Applying task diff: $DIFF_FILE"
+    # Normalize potential CRLF to LF to avoid patch failures
+    if command -v dos2unix >/dev/null 2>&1; then dos2unix -q "$DIFF_FILE" || true; fi
     # Ensure we are in a git repo with a baseline commit
     if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       git init >/dev/null 2>&1 || true
@@ -31,12 +40,40 @@ else
       git commit -m "baseline" >/dev/null 2>&1 || true
     fi
     # Try to apply the diff
-    if ! git apply --index --reject --whitespace=fix "$DIFF_FILE"; then
-      echo "git apply failed; attempting without --index..." 1>&2
-      if ! git apply --reject --whitespace=fix "$DIFF_FILE"; then
-        echo "Failed to apply task diff: $DIFF_FILE" 1>&2
-        exit 2
+    if git apply --index --reject --whitespace=fix "$DIFF_FILE"; then
+      echo "git apply --index succeeded"
+      APPLIED=1
+    else
+      echo "git apply --index failed; attempting without --index..." 1>&2
+      if git apply --reject --whitespace=fix "$DIFF_FILE"; then
+        echo "git apply (no index) succeeded"
+        APPLIED=1
+      else
+        echo "git apply failed; attempting patch -p0..." 1>&2
+        if command -v patch >/dev/null 2>&1 && patch -p0 -N -r - < "$DIFF_FILE"; then
+          echo "patch -p0 succeeded"
+          APPLIED=1
+        else
+          echo "Failed to apply task diff with all strategies: $DIFF_FILE" 1>&2
+          ls -la "tasks" || true
+          ls -la "tasks/${TASK_ID}" || true
+          exit 2
+        fi
       fi
+    fi
+  fi
+  if [ ! -f "$DIFF_FILE" ]; then
+    echo "No diff file found at $DIFF_FILE" 1>&2
+    ls -la "tasks" || true
+    ls -la "tasks/${TASK_ID}" || true
+  fi
+
+  # Verify only if no diff was applied (avoid false negatives for tasks with different tokens)
+  if [ "$APPLIED" -eq 0 ]; then
+    # Heuristic: ensure at least advanced.js exists (repo baseline) — otherwise report
+    if [ ! -f server/routes/advanced.js ]; then
+      echo "Expected server/routes/advanced.js to exist; repository baseline mismatch." 1>&2
+      exit 3
     fi
   fi
 
