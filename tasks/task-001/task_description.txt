@@ -1,45 +1,32 @@
 task_description: |
-  Task: Advanced numeric analytics endpoints and robust formatting
+  Task: 
   Instructions:
-  You must extend the Node/Express server to support advanced numeric analytics and richer formatting for the advanced routes. Implement the following requirements so that all provided tests pass.
+  Set up tricky number spots so every action works right. Fix each part till checks are green.
 
-  Background:
-  The repository exposes arithmetic routes under `/api` and advanced numerical utilities under `/adv`. We now need production-grade analytics and formatting that clients depend on.
+  Requirements (as tested):
+  - POST /adv/stats
+  - Body: { "numbers": list of numbers, "ddof" optional integer }
+  - Check: list isn't empty and holds only real numbers; when n minus ddof is zero or less → return 400 (ddof usually is 1).
+  {"mean": "average value", "median": "middle number when sorted", "mode": "most frequent number", "variance": "how spread out numbers are", "stddev": "square root of variance"}.
+  Variance or stddev? They go with sample stats, using n minus ddof down below. Each time it's set up a bit different - keeps things moving without fluff or repeats.
+  Numeric stability deals with values near 1e9 - using safeguards to prevent overflow or errors during calculations.
 
-  Critical tested requirements:
-  1) Implement a new endpoint: `POST /adv/stats`
-     - Request body: `{ "numbers": number[], "ddof"?: integer }`
-     - Behavior:
-       - Validate `numbers` exists, is a non-empty array of finite numbers.
-       - Compute and return JSON with: `mean`, `median`, `mode` (null if no unique mode), `variance`, `stddev`.
-       - `variance` and `stddev` must use sample statistics with denominator `n - ddof` where `ddof` defaults to 1. If `n - ddof <= 0`, respond `400`.
-       - Numerical stability and precision must handle inputs up to magnitude 1e9.
-     - Response example:
-       `{ "mean": 3.0, "median": 3.0, "mode": 3, "variance": 2.5, "stddev": 1.5811388301 }`
+  - GET /adv/primes
+  - Input: n (number), maybe start (numb >= 2), format choice like json or csv.
+  - if start given: give back prime numbers from [start, n]; otherwise just list them from [2, n].
+  {"result":[1,2,3]}.
+  "prime" 2 3 5 7 11 13 17 19 23 29 .
+  - Check input: use whole numbers only. If start is bigger than n, return 400.
+  - Speed test: with n=20000 and json output, finishes under 2 seconds.
 
-  2) Enhance existing `GET /adv/primes` endpoint:
-     - Add optional query parameter `start` (integer ≥ 2). When provided, return all primes in the closed interval `[start, n]` instead of `[2, n]`.
-     - Add optional query parameter `format` with values `json` (default) or `csv`.
-       - `json` format remains `{ "result": number[] }`.
-       - `csv` format must return `text/csv` with header `prime` and one prime per line.
-     - Input validation: `n` and `start` must be integers, `2 ≤ start ≤ n`.
+  - GET /adv/gcd and GET /adv/lcm
+  - Input needs whole numbers only - toss out fractions or decimals (like 400).
+  - Results stay positive (like gcd(-8,12)=4; lcm(-4,6)=12).
 
-  3) Normalize sign for `gcd` and `lcm` endpoints:
-     - `GET /adv/gcd` and `GET /adv/lcm` must treat inputs as integers and return non-negative results.
-       - Examples: `gcd(-8, 12) = 4`, `lcm(-4, 6) = 12`.
+  Notes:
+  - Tweak just: server/routes/advanced.js, also server/services/calculator.js, along with server/middleware/validate.js
 
-  Technical requirements:
-  - Implement robust validation middleware for JSON number arrays.
-  - Keep existing behavior backward compatible unless explicitly specified above.
-  - Only modify exactly three files under `server`: `routes/advanced.js`, `services/calculator.js`, `middleware/validate.js`.
-  - Use existing utility modules where appropriate (`server/utils/array.js`).
-
-  Success criteria:
-  - All six provided tests fail against the starter, and pass after making the required changes to the three specified files.
-  - Performance: `GET /adv/primes?n=20000` with `format=json` completes within 2 seconds on a typical laptop environment.
-
-
- difficulty: hard
- category: Feature
- tags: [node, express, algorithms]
- parser_name: pytest
+difficulty: hard
+category: Feature
+tags: [node, express, algorithms]
+parser_name: pytest
