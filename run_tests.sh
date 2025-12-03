@@ -45,8 +45,10 @@ else
   fi
   APPLIED=0
   PRECHANGES=0
+  COMMITS=0
   # Detect if targeted source files already modified (scope only to 3 files)
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    COMMITS=$(git rev-list --count HEAD 2>/dev/null || echo 0)
     if git diff --name-only -- server/middleware/validate.js server/routes/advanced.js server/services/calculator.js | grep -q "."; then
       PRECHANGES=1
     fi
@@ -58,8 +60,8 @@ else
     ENDPOINTS_PRESENT=1
   fi
 
-  # Apply diff if present and endpoints not already present
-  if [ -f "$DIFF_FILE" ] && [ "$ENDPOINTS_PRESENT" -eq 0 ]; then
+  # Apply diff only if endpoints missing AND no pre-existing changes AND single initial commit (null-agent path)
+  if [ -f "$DIFF_FILE" ] && [ "$ENDPOINTS_PRESENT" -eq 0 ] && [ "$PRECHANGES" -eq 0 ] && [ "$COMMITS" -le 1 ]; then
     echo "Applying task diff: $DIFF_FILE"
     # Normalize potential CRLF to LF to avoid patch failures
     if command -v dos2unix >/dev/null 2>&1; then dos2unix -q "$DIFF_FILE" || true; fi
@@ -100,6 +102,10 @@ else
     fi
   elif [ -f "$DIFF_FILE" ] && [ "$ENDPOINTS_PRESENT" -eq 1 ]; then
     echo "Advanced endpoints already present; skipping diff apply." >&2
+  elif [ -f "$DIFF_FILE" ] && [ "$PRECHANGES" -ne 0 ]; then
+    echo "Detected pre-existing changes to target files; skipping diff apply to avoid overwriting agent edits." >&2
+  elif [ -f "$DIFF_FILE" ] && [ "$COMMITS" -gt 1 ]; then
+    echo "Detected multiple commits (agent edits present); skipping diff apply." >&2
   fi
   if [ ! -f "$DIFF_FILE" ]; then
     echo "No diff file found at $DIFF_FILE" 1>&2
@@ -107,11 +113,15 @@ else
     ls -la "tasks/${TASK_ID}" || true
   fi
 
-  # If endpoints still missing and diff not applied, fail cleanly to surface patch issues
+  # If endpoints still missing and diff not applied, fail only for null path (single commit, no prechanges)
   if [ "$APPLIED" -eq 0 ] && ! grep -q "/adv/stats" server/routes/advanced.js 2>/dev/null; then
-    echo "Task features not present and no diff applied. Aborting." 1>&2
-    echo "Hint: ensure tasks/${TASK_ID}/task_diff.txt exists and matches repository baseline." 1>&2
-    exit 3
+    if [ "$COMMITS" -le 1 ] && [ "$PRECHANGES" -eq 0 ]; then
+      echo "Task features not present and no diff applied (null path). Aborting." 1>&2
+      echo "Hint: ensure tasks/${TASK_ID}/task_diff.txt exists and matches repository baseline." 1>&2
+      exit 3
+    else
+      echo "Features missing but agent edits detected (oracle path); proceeding without applying diff." >&2
+    fi
   fi
 
   # Now install deps
