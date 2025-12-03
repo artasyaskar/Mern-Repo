@@ -26,8 +26,7 @@ task_description: |
     {"25": 2, "50": 3, "75": 4}.
 
   Notes:
-  - Just tweak: server/routes/advanced.js, after that update server/services/calculator.js, also give server/middleware/validate.js a quick edit
-  Keep things running fine with big loads - results stay solid, no stumbles or slowing down.
+  - Focus your changes in server/routes/advanced.js and server/services/calculator.js. You may handle validation inline in the route; updating middleware is optional and not required by tests.
 
 difficulty: hard
 category: Feature
