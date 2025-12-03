@@ -1,28 +1,30 @@
 task_description: |
-  Task: Implement and adjust advanced numeric endpoints with precise calculations
+  Task: 
+  Instructions:
+  Set up complex number-based functions, then tweak them for accurate results using exact math
   Instructions:
   Requirements (as tested):
   - POST /adv/stats
-    - Body: { 'numbers': array of numbers, 'ddof'?: integer } (ddof defaults to 1)
-    - Validate: non-empty array of finite numbers; return 400 if n - ddof <= 0
-    - Return JSON: { mean, median, mode, variance, stddev }
-    - Use sample statistics with denominator (n - ddof)
-    - Handle numeric stability for values up to 1e9
+    Body: { 'numbers': list of number values, 'ddof' optional whole number } - if missing, ddof is 1
+    Check it’s a non-blank list of real numbers. If n minus ddof is zero or less, shoot back 400
+    {"mean": 5.3, "median": 5, "mode": 4, "variance": 2.1, "stddev": 1.4}
+    - Work with sample stats using denominator (n minus ddof)
+    - Manage numbers safely, even as high as 1 billion
 
   - GET /adv/primes
-    - Query: n (int), optional start (int ≥ 2), optional format in {json, csv}
-    - Return primes in [start, n] if start provided, else [2, n]
-    - format=json: { "result": number[] }
-    - format=csv: text/csv with header "prime" and one prime per line
-    - Validation: integers only; return 400 if start > n
-    - Performance: n=20000 with format=json must complete < 2s
+    - Input: n (whole number), maybe a starting point (number at least 2), choice of layout – either json or csv
+    - Give prime numbers from [start, n] when start is given; otherwise, list them from [2, n]
+    {"result": [1, 2, 3]}
+    "prime" 2 3 5 7 11
+    - Check numbers: use whole numbers only; send back 400 when start is bigger than n
+    - Speed test: n equals twenty thousand using json format should finish under two seconds
 
   - GET /adv/gcd and GET /adv/lcm
-    - Inputs must be integers (return 400 for decimals)
-    - Results must be non-negative (e.g., gcd(-8,12)=4; lcm(-4,6)=12)
+    - Inputs should be whole numbers (send back 400 if they're not)
+    - Answers can't be negative (like gcd(-8,12)=4; lcm(-4,6)=12)
 
   Notes:
-  - Modify only: server/routes/advanced.js, server/services/calculator.js, server/middleware/validate.js
+  - Change just: server/routes/advanced.js, also server/services/calculator.js, alongside server/middleware/validate.js
 
 difficulty: hard
 category: Feature
