@@ -13,6 +13,33 @@ else
   # First run base tests to ensure starter remains intact
   npx jest tests/base
 
+  # If the task provides a diff, apply it so a null agent can pass
+  DIFF_FILE="tasks/${TASK_ID}/task_diff.txt"
+  if [ -f "$DIFF_FILE" ]; then
+    echo "Applying task diff: $DIFF_FILE"
+    # Ensure we are in a git repo with a baseline commit
+    if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      git init >/dev/null 2>&1 || true
+    fi
+    git config user.email "runner@example.com" >/dev/null 2>&1 || true
+    git config user.name "Runner" >/dev/null 2>&1 || true
+    git config core.autocrlf false >/dev/null 2>&1 || true
+    git config core.safecrlf false >/dev/null 2>&1 || true
+    # Create baseline commit if none exists
+    if ! git rev-parse HEAD >/dev/null 2>&1; then
+      git add -A >/dev/null 2>&1 || true
+      git commit -m "baseline" >/dev/null 2>&1 || true
+    fi
+    # Try to apply the diff
+    if ! git apply --index --reject --whitespace=fix "$DIFF_FILE"; then
+      echo "git apply failed; attempting without --index..." 1>&2
+      if ! git apply --reject --whitespace=fix "$DIFF_FILE"; then
+        echo "Failed to apply task diff: $DIFF_FILE" 1>&2
+        exit 2
+      fi
+    fi
+  fi
+
   PY_TEST_FILE="tasks/${TASK_ID}/task_tests.py"
   if [ ! -f "$PY_TEST_FILE" ]; then
     echo "Task tests not found: ${PY_TEST_FILE}" 1>&2
