@@ -1,30 +1,30 @@
 task_description: |
-  Task: 
+  Task: Implement and adjust advanced numeric endpoints
   Instructions:
-  Set up complex number-based functions, then tweak them for accurate results using exact math
+  Set up functions using complex numbers - then tweak accuracy through tight computations
   Instructions:
   Requirements (as tested):
   - POST /adv/stats
-    Body: { 'numbers': list of number values, 'ddof' optional whole number } - if missing, ddof is 1
-    Check it’s a non-blank list of real numbers. If n minus ddof is zero or less, shoot back 400
-    {"mean": 5.3, "median": 5, "mode": 4, "variance": 2.1, "stddev": 1.4}
-    - Work with sample stats using denominator (n minus ddof)
-    - Manage numbers safely, even as high as 1 billion
+    Body: { 'numbers': a set of numeric entries, though 'ddof' may show up as an integer } - if missing, defaults to 1
+    1. Check that the list has real numbers, not blanks. 2. If n less ddof equals zero or below, give back 400.
+    {"average": 5.3, though the center point's actually 5; you'll see 4 pop up most often, how stretched it is comes out at 2.1, whereas usual gap from mean ends near 1.4}
+    Try different values - split them by n minus ddof
+    Deal with huge numbers safely - say, close to a billion, maybe even a bit more
 
   - GET /adv/primes
-    - Input: n (whole number), maybe a starting point (number at least 2), choice of layout – either json or csv
-    - Give prime numbers from [start, n] when start is given; otherwise, list them from [2, n]
+    - You hand me: n (just a whole number), maybe a starting point (anything from 2 onward), also choose the format - json or csv
+    Show prime numbers between [start, n] when start’s given; otherwise list them from [2, n]
     {"result": [1, 2, 3]}
-    "prime" 2 3 5 7 11
-    - Check numbers: use whole numbers only; send back 400 when start is bigger than n
-    - Speed test: n equals twenty thousand using json format should finish under two seconds
+    "top" but 4 3 6 8 10 yet
+    - Check numbers: use whole digits only; send back 400 if start goes past n
+    - Test how fast it runs: if n hits twenty thousand using json info, wraps up faster than two seconds
 
   - GET /adv/gcd and GET /adv/lcm
-    - Inputs should be whole numbers (send back 400 if they're not)
-    - Answers can't be negative (like gcd(-8,12)=4; lcm(-4,6)=12)
+    - Inputs gotta be whole numbers - toss back 400 if anything’s off, but test every value upfront before replying
+    No negative results accepted - like how gcd(-8,12) gives 4; lcm(-4,6) still comes out 12
 
   Notes:
-  - Change just: server/routes/advanced.js, also server/services/calculator.js, alongside server/middleware/validate.js
+  - Switch just: server/routes/advanced.js, when upgrading server/services/calculator.js - also tweak server/middleware/validate.js
 
 difficulty: hard
 category: Feature
