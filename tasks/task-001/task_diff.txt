@@ -1,0 +1,293 @@
+diff --git a/server/index.js b/server/index.js
+index c55e124..746caa0 100644
+--- a/server/index.js
++++ b/server/index.js
+@@ -1,11 +1,13 @@
+ const express = require('express');
+ const path = require('path');
+ const api = require('./routes/api');
++const { router: calcRouter } = require('./routes/calc');
+ 
+ const app = express();
+ app.use(express.json());
+ 
+ app.use('/api', api);
++app.use('/api', calcRouter);
+ 
+ // Serve static client
+ app.use(express.static(path.join(__dirname, '..', 'client')));
+diff --git a/server/routes/calc.js b/server/routes/calc.js
+new file mode 100644
+index 0000000..6e17b53
+--- /dev/null
++++ b/server/routes/calc.js
+@@ -0,0 +1,44 @@
++const express = require('express');
++const { setVar, getVar } = require('../state/vars');
++const { Evaluator } = require('../utils/evaluator');
++
++const router = express.Router();
++
++const varsHandler = (req, res) => {
++  const { name, value } = req.body || {};
++  try {
++    if (name === undefined || value === undefined) {
++      const err = new Error('invalid payload');
++      err.status = 400;
++      throw err;
++    }
++    setVar(name, value);
++    res.json({ ok: true });
++  } catch (e) {
++    const status = e.status || 400;
++    res.status(status).json({ error: e.message || 'bad request' });
++  }
++};
++
++router.post('/vars', varsHandler);
++
++const calcHandler = (req, res) => {
++  const { expr } = req.body || {};
++  if (typeof expr !== 'string' || expr.trim() === '') {
++    return res.status(400).json({ error: 'syntax error' });
++  }
++  try {
++    const evaluator = new Evaluator((name) => getVar(name));
++    const result = evaluator.eval(expr);
++    if (!Number.isFinite(result)) return res.status(400).json({ error: 'syntax error' });
++    res.json({ result });
++  } catch (e) {
++    const msg = (e && e.message) ? e.message : 'syntax error';
++    const status = msg.toLowerCase().includes('division by zero') ? 400 : 400;
++    res.status(status).json({ error: msg });
++  }
++};
++
++router.post('/calc', calcHandler);
++
++module.exports = { router, varsHandler, calcHandler };
+diff --git a/server/state/vars.js b/server/state/vars.js
+new file mode 100644
+index 0000000..332614c
+--- /dev/null
++++ b/server/state/vars.js
+@@ -0,0 +1,29 @@
++const store = Object.create(null);
++
++function isValidName(name) {
++  return typeof name === 'string' && /^[A-Za-z][A-Za-z0-9_]*$/.test(name);
++}
++
++function setVar(name, value) {
++  if (!isValidName(name)) {
++    const err = new Error('invalid variable name');
++    err.status = 400;
++    throw err;
++  }
++  if (!Number.isFinite(value)) {
++    const err = new Error('invalid variable value');
++    err.status = 400;
++    throw err;
++  }
++  store[name] = Number(value);
++  return store[name];
++}
++
++function getVar(name) {
++  if (Object.prototype.hasOwnProperty.call(store, name)) return store[name];
++  const err = new Error(`undefined variable ${name}`);
++  err.status = 400;
++  throw err;
++}
++
++module.exports = { setVar, getVar, isValidName };
+diff --git a/server/utils/evaluator.js b/server/utils/evaluator.js
+new file mode 100644
+index 0000000..85f0c6b
+--- /dev/null
++++ b/server/utils/evaluator.js
+@@ -0,0 +1,75 @@
++const { Tokenizer } = require('./tokenizer');
++
++class Evaluator {
++  constructor(resolveVar) {
++    this.resolveVar = resolveVar || (() => { throw new Error('syntax error'); });
++  }
++
++  eval(expr) {
++    this.tok = new Tokenizer(expr);
++    this.tok.next();
++    const value = this.parseExpression();
++    if (this.tok.current.type !== 'EOF') throw new Error('syntax error');
++    return value;
++  }
++
++  // expression -> term ( (PLUS|MINUS) term )*
++  parseExpression() {
++    let v = this.parseTerm();
++    while (this.tok.current.type === 'PLUS' || this.tok.current.type === 'MINUS') {
++      const op = this.tok.current.type;
++      this.tok.next();
++      const rhs = this.parseTerm();
++      v = op === 'PLUS' ? v + rhs : v - rhs;
++    }
++    return v;
++  }
++
++  // term -> factor ( (MUL|DIV) factor )*
++  parseTerm() {
++    let v = this.parseFactor();
++    while (this.tok.current.type === 'MUL' || this.tok.current.type === 'DIV') {
++      const op = this.tok.current.type;
++      this.tok.next();
++      const rhs = this.parseFactor();
++      if (op === 'MUL') {
++        v = v * rhs;
++      } else {
++        if (rhs === 0) throw new Error('division by zero');
++        v = v / rhs;
++      }
++    }
++    return v;
++  }
++
++  // factor -> NUMBER | IDENT | LPAREN expression RPAREN | MINUS factor (unary)
++  parseFactor() {
++    const t = this.tok.current;
++    if (t.type === 'NUMBER') {
++      const n = t.value;
++      this.tok.next();
++      return n;
++    }
++    if (t.type === 'IDENT') {
++      const name = t.value;
++      this.tok.next();
++      const val = this.resolveVar(name);
++      if (!Number.isFinite(val)) throw new Error(`undefined variable ${name}`);
++      return Number(val);
++    }
++    if (t.type === 'LPAREN') {
++      this.tok.next();
++      const v = this.parseExpression();
++      if (this.tok.current.type !== 'RPAREN') throw new Error('syntax error');
++      this.tok.next();
++      return v;
++    }
++    if (t.type === 'MINUS') {
++      this.tok.next();
++      return -this.parseFactor();
++    }
++    throw new Error('syntax error');
++  }
++}
++
++module.exports = { Evaluator };
+diff --git a/server/utils/tokenizer.js b/server/utils/tokenizer.js
+new file mode 100644
+index 0000000..acdf61d
+--- /dev/null
++++ b/server/utils/tokenizer.js
+@@ -0,0 +1,88 @@
++class Tokenizer {
++  constructor(input) {
++    this.input = input || '';
++    this.pos = 0;
++    this.current = null;
++  }
++
++  isEOF() {
++    return this.pos >= this.input.length;
++  }
++
++  peekChar() {
++    return this.input[this.pos];
++  }
++
++  nextChar() {
++    return this.input[this.pos++];
++  }
++
++  isWhitespace(ch) {
++    return ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r';
++  }
++
++  isDigit(ch) {
++    return ch >= '0' && ch <= '9';
++  }
++
++  isLetter(ch) {
++    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
++  }
++
++  isIdentChar(ch) {
++    return this.isLetter(ch) || this.isDigit(ch) || ch === '_';
++  }
++
++  skipWhitespace() {
++    while (!this.isEOF() && this.isWhitespace(this.peekChar())) this.nextChar();
++  }
++
++  readNumber() {
++    let buf = '';
++    let dotCount = 0;
++    while (!this.isEOF()) {
++      const ch = this.peekChar();
++      if (this.isDigit(ch)) {
++        buf += this.nextChar();
++      } else if (ch === '.') {
++        dotCount++;
++        if (dotCount > 1) break;
++        buf += this.nextChar();
++      } else {
++        break;
++      }
++    }
++    if (buf === '.' || buf === '') throw new Error('syntax error');
++    return { type: 'NUMBER', value: parseFloat(buf) };
++  }
++
++  readIdent() {
++    let buf = '';
++    const first = this.peekChar();
++    if (!this.isLetter(first)) throw new Error('syntax error');
++    while (!this.isEOF() && this.isIdentChar(this.peekChar())) {
++      buf += this.nextChar();
++    }
++    return { type: 'IDENT', value: buf };
++  }
++
++  next() {
++    this.skipWhitespace();
++    if (this.isEOF()) return (this.current = { type: 'EOF' });
++    const ch = this.peekChar();
++    if (this.isDigit(ch) || ch === '.') return (this.current = this.readNumber());
++    if (this.isLetter(ch)) return (this.current = this.readIdent());
++    switch (ch) {
++      case '+': this.nextChar(); return (this.current = { type: 'PLUS' });
++      case '-': this.nextChar(); return (this.current = { type: 'MINUS' });
++      case '*': this.nextChar(); return (this.current = { type: 'MUL' });
++      case '/': this.nextChar(); return (this.current = { type: 'DIV' });
++      case '(': this.nextChar(); return (this.current = { type: 'LPAREN' });
++      case ')': this.nextChar(); return (this.current = { type: 'RPAREN' });
++      default:
++        throw new Error('syntax error');
++    }
++  }
++}
++
++module.exports = { Tokenizer };
+diff --git a/tests/base/calc_mount.test.js b/tests/base/calc_mount.test.js
+new file mode 100644
+index 0000000..61d2cfb
+--- /dev/null
++++ b/tests/base/calc_mount.test.js
+@@ -0,0 +1,9 @@
++const request = require('supertest');
++const app = require('../../server');
++
++describe('calc router mount', () => {
++  test('POST /api/vars exists and validates payload', async () => {
++    const res = await request(app).post('/api/vars').send({});
++    expect([200,400]).toContain(res.statusCode);
++  });
++});
