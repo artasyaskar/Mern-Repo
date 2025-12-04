@@ -1,0 +1,108 @@
+diff --git a/server/middleware/validate.js b/server/middleware/validate.js
+index a1d95b8..4d94117 100644
+--- a/server/middleware/validate.js
++++ b/server/middleware/validate.js
+@@ -1 +1,29 @@
+-function requireNumbers(keys){return function(req,res,next){for(const k of keys){const v=Number(req.query[k]);if(Number.isNaN(v)){res.status(400).json({error:k});return;}}next();};}module.exports={requireNumbers};
++function requireNumbers(keys){
++  return function(req,res,next){
++    for(const k of keys){
++      const raw = req.query[k];
++      const v = Number(raw);
++      if(raw === undefined || raw === '' || Number.isNaN(v)){
++        res.status(400).json({error:k});
++        return;
++      }
++    }
++    next();
++  };
++}
++
++function requireIntegers(keys){
++  return function(req,res,next){
++    for(const k of keys){
++      const raw = req.query[k];
++      const v = Number(raw);
++      if(raw === undefined || raw === '' || Number.isNaN(v) || !Number.isInteger(v)){
++        res.status(400).json({error:k});
++        return;
++      }
++    }
++    next();
++  };
++}
++
++module.exports={requireNumbers,requireIntegers};
+diff --git a/server/routes/advanced.js b/server/routes/advanced.js
+index 0144b18..847442a 100644
+--- a/server/routes/advanced.js
++++ b/server/routes/advanced.js
+@@ -1 +1,60 @@
+-const express=require('express');const {requireNumbers}=require('../middleware/validate');const {factorial,fibonacci,gcd,lcm,primesUpTo}=require('../services/calculator');const router=express.Router();router.get('/factorial',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:factorial(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/fibonacci',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:fibonacci(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/gcd',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:gcd(a,b)})});router.get('/lcm',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:lcm(a,b)})});router.get('/primes',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);res.json({result:primesUpTo(n)})});module.exports=router;
++const express=require('express');
++const {requireNumbers,requireIntegers}=require('../middleware/validate');
++const {factorial,fibonacci,gcd,lcm,egcd,lcmMany,primesUpTo}=require('../services/calculator');
++const router=express.Router();
++
++router.get('/factorial',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:factorial(n)})}catch(e){res.status(400).json({error:e.message})}});
++router.get('/fibonacci',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:fibonacci(n)})}catch(e){res.status(400).json({error:e.message})}});
++
++// Integer-only endpoints
++router.get('/gcd',requireIntegers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:gcd(a,b)})});
++router.get('/lcm',requireIntegers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:lcm(a,b)})});
++
++// Extended GCD -> Bezout coefficients
++router.get('/egcd',requireIntegers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);const {g,x,y}=egcd(a,b);res.json({gcd:g,x,y})});
++
++// LCM of many numbers from comma-separated list
++router.get('/lcm_many',(req,res)=>{
++  const raw = req.query.nums;
++  if(typeof raw !== 'string' || raw.trim()===''){
++    res.status(400).json({error:'nums'});return;
++  }
++  const parts = raw.split(',');
++  if(parts.length===0){res.status(400).json({error:'nums'});return;}
++  const nums=[];
++  for(const p of parts){
++    if(p.trim()===''){res.status(400).json({error:'nums'});return;}
++    const v = Number(p);
++    if(!Number.isInteger(v)){res.status(400).json({error:'nums'});return;}
++    nums.push(v);
++  }
++  res.json({result:lcmMany(nums)});
++});
++
++// Primes range with format support
++router.get('/primes_range',(req,res)=>{
++  const nRaw = req.query.n;
++  const startRaw = req.query.start;
++  const fmt = (req.query.format||'json').toString().toLowerCase();
++  const n = Number(nRaw);
++  if(!Number.isInteger(n) || n < 2){res.status(400).json({error:'n'});return;}
++  let start = 2;
++  if(startRaw!==undefined){
++    const s = Number(startRaw);
++    if(!Number.isInteger(s) || s < 2 || s > n){res.status(400).json({error:'start'});return;}
++    start = s;
++  }
++  const primes = primesUpTo(n).filter(v=>v>=start);
++  if(fmt==='csv'){
++    res.setHeader('Content-Type','text/csv');
++    const lines = ['prime',...primes.map(String)];
++    res.send(lines.join('\n'));
++  }else{ // default json
++    res.json({result:primes});
++  }
++});
++
++// Existing simple primes endpoint
++router.get('/primes',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);res.json({result:primesUpTo(n)})});
++
++module.exports=router;
+diff --git a/server/services/calculator.js b/server/services/calculator.js
+index fb5ba03..d5d4ae1 100644
+--- a/server/services/calculator.js
++++ b/server/services/calculator.js
+@@ -1 +1 @@
+-function factorial(n){if(n<0)throw new Error('neg');let r=1;for(let i=2;i<=n;i++)r*=i;return r;}function fibonacci(n){if(n<0)throw new Error('neg');let a=0,b=1;for(let i=0;i<n;i++){[a,b]=[b,a+b];}return a;}function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}function lcm(a,b){if(a===0||b===0)return 0;return Math.abs(a*b)/gcd(a,b);}function prime(n){if(n<2)return false;for(let i=2;i*i<=n;i++){if(n%i===0)return false;}return true;}function primesUpTo(n){const out=[];for(let i=2;i<=n;i++){if(prime(i))out.push(i);}return out;}function mean(arr){return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0;}function variance(arr){if(arr.length<2)return 0;const m=mean(arr);return arr.reduce((s,x)=>s+(x-m)*(x-m),0)/(arr.length-1);}function stddev(arr){return Math.sqrt(variance(arr));}module.exports={factorial,fibonacci,gcd,lcm,prime,primesUpTo,mean,variance,stddev};
++function factorial(n){if(n<0)throw new Error('neg');let r=1;for(let i=2;i<=n;i++)r*=i;return r;}function fibonacci(n){if(n<0)throw new Error('neg');let a=0,b=1;for(let i=0;i<n;i++){[a,b]=[b,a+b];}return a;}function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}function lcm(a,b){if(a===0||b===0)return 0;return Math.abs(a*b)/gcd(a,b);}function egcd(a,b){let old_r=Math.abs(a),r=Math.abs(b),old_s=1,s=0,old_t=0,t=1;while(r!==0){const q=Math.floor(old_r/r);[old_r,r]=[r,old_r-q*r];[old_s,s]=[s,old_s-q*s];[old_t,t]=[t,old_t-q*t];}return {g:old_r,x:old_s*(a<0?-1:1),y:old_t*(b<0?-1:1)};}function lcmMany(arr){if(!arr.length)return 0;let res=Math.abs(arr[0]);for(let i=1;i<arr.length;i++){const v=Math.abs(arr[i]);res=lcm(res,v);}return res;}function prime(n){if(n<2)return false;for(let i=2;i*i<=n;i++){if(n%i===0)return false;}return true;}function primesUpTo(n){const out=[];for(let i=2;i<=n;i++){if(prime(i))out.push(i);}return out;}function mean(arr){return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0;}function variance(arr){if(arr.length<2)return 0;const m=mean(arr);return arr.reduce((s,x)=>s+(x-m)*(x-m),0)/(arr.length-1);}function stddev(arr){return Math.sqrt(variance(arr));}module.exports={factorial,fibonacci,gcd,lcm,egcd,lcmMany,prime,primesUpTo,mean,variance,stddev};

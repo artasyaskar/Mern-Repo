@@ -1,0 +1,26 @@
+task_description: |
+  Task: Integer rigor, prime ranges, and multi-operand LCM — add endpoints and strict validation
+  Instructions:
+  Strengthen integer validation and add new advanced math endpoints. Keep implementations numerically correct and efficient.
+  Requirements (as tested):
+  - GET /adv/gcd and GET /adv/lcm
+    - Introduce integer-only validation. Decimal values like a=8.5 must return HTTP 400.
+    - Results must be non-negative (e.g., gcd(-8,12)=4, lcm(-4,6)=12).
+
+  - GET /adv/egcd
+    - Params: a, b (integers). Return Bezout coefficients.
+    - Response JSON: {"gcd": G, "x": x, "y": y} such that ax + by = G and G >= 0.
+
+  - GET /adv/lcm_many
+    - Param: nums (comma-separated integers). Reject empty list or any non-integer -> HTTP 400.
+    - Return JSON {"result": lcm(nums)} with non-negative result. lcm with any zero returns 0.
+
+  - GET /adv/primes_range
+    - Params: n (int, n >= 2), optional start (int, 2 <= start <= n), optional format ("json" | "csv").
+    - When format=json (default), respond {"result": [primes in [start or 2, n]]}.
+    - When format=csv, respond text/csv with header line "prime" followed by one prime per line.
+    - Performance: with n=30000 and format=json, must complete under 2 seconds.
+
+  Validation helpers:
+  - Add an integer-only validator middleware (e.g., requireIntegers) to reject non-integer numeric inputs.
+  - Reuse across gcd, lcm and new endpoints.
