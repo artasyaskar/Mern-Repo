@@ -102,3 +102,22 @@ def test_primes_range_csv_and_performance():
     assert isinstance(data.get("result"), list)
     assert len(data["result"]) == 3245  # pi(30000) = 3245
     assert elapsed < 2.0
+
+
+def test_egcd_requires_integers():
+    """/adv/egcd must reject non-integer inputs with HTTP 400."""
+    r1 = requests.get(f"{BASE}/adv/egcd", params={"a": 7.5, "b": 5}, timeout=5)
+    r2 = requests.get(f"{BASE}/adv/egcd", params={"a": 12, "b": -3.2}, timeout=5)
+    assert r1.status_code == 400
+    assert r2.status_code == 400
+
+
+def test_literal_dot_tokens_rejected_for_integer_endpoints():
+    """Endpoints that require integers must reject a literal '.' token in query params."""
+    for path, params in [
+        ("/adv/gcd", {"a": ".", "b": "12"}),
+        ("/adv/lcm", {"a": ".", "b": "6"}),
+        ("/adv/egcd", {"a": ".", "b": "5"}),
+    ]:
+        r = requests.get(f"{BASE}{path}", params=params, timeout=5)
+        assert r.status_code == 400
