@@ -9,18 +9,18 @@ task_description: |
   Quick math handling: runs well with huge numbers - say, close to 10 million - by using repeated squaring tricks.
 
   - GET /adv/modinv
-  {'result': x}, where x is some number between 0 and m−1; suppose you grab a, multiply it by x, divide the total by m - what’s leftover equals precisely 1; that happens only if a and m are integers, also m must be bigger than 1.
-  If there’s no inverse - meaning gcd(a,m) ≠ 1 - return HTTP 400 along with a straightforward error message.
+  {'result': x}, where x is in [0, m−1] and (a*x) % m == 1; a and m are integers with m > 1.
+  If there’s no inverse (gcd(a,m) ≠ 1), return HTTP 400.
 
   - GET /adv/crt
   {"x": found_value, "m": lcm_result}.
   If stuff fails since parts don’t fit, return HTTP 400 instead.
 
   - GET /adv/primes_segment
-  L and R are full numbers where 2 ≤ L, also L isn't larger than R. Pick your format - json or csv - it’s your call.
-  {"result": [prime numbers from L up to R]}.
-  prime numbers like 2, next comes 3, followed by 5, right behind 7, also 11, similar to 13, along with 17, shortly 19, beyond 23, ending at 29.
-  - Quickness: R must hit 100k in less than a half-second if running with json config.
+  L and R are full numbers where 2 ≤ L ≤ R. Pick your format - json or csv.
+  For format=json (default): respond {"result": [primes in [L,R]]}.
+  For format=csv: respond text/csv with the header line "prime" followed by one prime per line.
+  - Performance: with json format and R up to 100000, response should complete under 1.5 seconds.
 
   - GET /adv/stats
   Send numbers with commas between them. If anything’s missing or looks strange? Send back error 400.
