@@ -1,0 +1,246 @@
+diff --git a/server/middleware/validate.js b/server/middleware/validate.js
+index a1d95b8..b62049f 100644
+--- a/server/middleware/validate.js
++++ b/server/middleware/validate.js
+@@ -1 +1,32 @@
+-function requireNumbers(keys){return function(req,res,next){for(const k of keys){const v=Number(req.query[k]);if(Number.isNaN(v)){res.status(400).json({error:k});return;}}next();};}module.exports={requireNumbers};
++function requireNumbers(keys){
++  return function(req,res,next){
++    for(const k of keys){
++      const v = Number(req.query[k]);
++      if(Number.isNaN(v)){
++        res.status(400).json({error:k});
++        return;
++      }
++    }
++    next();
++  };
++}
++
++function isIntegerString(s){
++  return typeof s === 'string' && /^-?\d+$/.test(s.trim());
++}
++
++function parseIntegerList(s){
++  if (typeof s !== 'string') return null;
++  const parts = s.split(',');
++  if (parts.length === 0) return null;
++  const out = [];
++  for (let t of parts){
++    t = String(t).trim();
++    if (t === '') return null;
++    if (!/^-?\d+$/.test(t)) return null;
++    out.push(Number(t));
++  }
++  return out.length ? out : null;
++}
++
++module.exports = { requireNumbers, isIntegerString, parseIntegerList };
+diff --git a/server/routes/advanced.js b/server/routes/advanced.js
+index 0144b18..ab17acb 100644
+--- a/server/routes/advanced.js
++++ b/server/routes/advanced.js
+@@ -1 +1,80 @@
+-const express=require('express');const {requireNumbers}=require('../middleware/validate');const {factorial,fibonacci,gcd,lcm,primesUpTo}=require('../services/calculator');const router=express.Router();router.get('/factorial',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:factorial(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/fibonacci',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:fibonacci(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/gcd',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:gcd(a,b)})});router.get('/lcm',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:lcm(a,b)})});router.get('/primes',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);res.json({result:primesUpTo(n)})});module.exports=router;
++const express = require('express');
++const { requireNumbers, isIntegerString, parseIntegerList } = require('../middleware/validate');
++const {
++  factorial,
++  fibonacci,
++  gcd,
++  lcm,
++  primesUpTo,
++  mean,
++  median,
++  mode,
++  primeFactors,
++  rollingMedian,
++  uniqueMode
++} = require('../services/calculator');
++
++const router = express.Router();
++
++router.get('/factorial', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  try { res.json({ result: factorial(n) }); }
++  catch (e) { res.status(400).json({ error: e.message }); }
++});
++
++router.get('/fibonacci', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  try { res.json({ result: fibonacci(n) }); }
++  catch (e) { res.status(400).json({ error: e.message }); }
++});
++
++router.get('/gcd', requireNumbers(['a','b']), (req, res) => {
++  const a = Number(req.query.a);
++  const b = Number(req.query.b);
++  res.json({ result: gcd(a,b) });
++});
++
++router.get('/lcm', requireNumbers(['a','b']), (req, res) => {
++  const a = Number(req.query.a);
++  const b = Number(req.query.b);
++  res.json({ result: lcm(a,b) });
++});
++
++router.get('/primes', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  res.json({ result: primesUpTo(n) });
++});
++
++// task-008
++router.get('/prime_factors', (req, res) => {
++  const nRaw = String(req.query.n ?? '');
++  if (!isIntegerString(nRaw)) return res.status(400).json({ error: 'invalid' });
++  const n = Number(nRaw);
++  if (n < 2) return res.status(400).json({ error: 'invalid' });
++  try { res.json({ result: primeFactors(n) }); }
++  catch (_e) { res.status(400).json({ error: 'invalid' }); }
++});
++
++router.get('/rolling_median', (req, res) => {
++  const nums = parseIntegerList(req.query.nums);
++  const kRaw = String(req.query.k ?? '');
++  if (!nums || !isIntegerString(kRaw)) return res.status(400).json({ error: 'invalid' });
++  const k = Number(kRaw);
++  if (k < 1 || k > nums.length || k % 2 === 0) return res.status(400).json({ error: 'invalid' });
++  try { res.json({ result: rollingMedian(nums, k) }); }
++  catch (_e) { res.status(400).json({ error: 'invalid' }); }
++});
++
++router.get('/unique_mode', (req, res) => {
++  const nums = parseIntegerList(req.query.nums);
++  if (!nums) return res.status(400).json({ error: 'invalid' });
++  try {
++    const u = uniqueMode(nums);
++    if (u === null) return res.status(400).json({ error: 'no-unique-mode' });
++    res.json({ result: u });
++  } catch (_e) {
++    res.status(400).json({ error: 'invalid' });
++  }
++});
++
++module.exports = router;
+diff --git a/server/services/calculator.js b/server/services/calculator.js
+index fb5ba03..49017e8 100644
+--- a/server/services/calculator.js
++++ b/server/services/calculator.js
+@@ -1 +1,116 @@
+-function factorial(n){if(n<0)throw new Error('neg');let r=1;for(let i=2;i<=n;i++)r*=i;return r;}function fibonacci(n){if(n<0)throw new Error('neg');let a=0,b=1;for(let i=0;i<n;i++){[a,b]=[b,a+b];}return a;}function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}function lcm(a,b){if(a===0||b===0)return 0;return Math.abs(a*b)/gcd(a,b);}function prime(n){if(n<2)return false;for(let i=2;i*i<=n;i++){if(n%i===0)return false;}return true;}function primesUpTo(n){const out=[];for(let i=2;i<=n;i++){if(prime(i))out.push(i);}return out;}function mean(arr){return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0;}function variance(arr){if(arr.length<2)return 0;const m=mean(arr);return arr.reduce((s,x)=>s+(x-m)*(x-m),0)/(arr.length-1);}function stddev(arr){return Math.sqrt(variance(arr));}module.exports={factorial,fibonacci,gcd,lcm,prime,primesUpTo,mean,variance,stddev};
++ function factorial(n) {
++   if (n < 0) throw new Error('neg');
++   let r = 1;
++   for (let i = 2; i <= n; i++) r *= i;
++   return r;
++ }
++
++ function fibonacci(n) {
++   if (n < 0) throw new Error('neg');
++   let a = 0, b = 1;
++   for (let i = 0; i < n; i++) { [a, b] = [b, a + b]; }
++   return a;
++ }
++
++ function gcd(a, b) {
++   a = Math.abs(a); b = Math.abs(b);
++   while (b) { [a, b] = [b, a % b]; }
++   return a;
++ }
++
++ function lcm(a, b) {
++   if (a === 0 || b === 0) return 0;
++   return Math.abs(a * b) / gcd(a, b);
++ }
++
++ function prime(n) {
++   if (n < 2) return false;
++   for (let i = 2; i * i <= n; i++) if (n % i === 0) return false;
++   return true;
++ }
++
++ function primesUpTo(n) {
++   const out = [];
++   for (let i = 2; i <= n; i++) if (prime(i)) out.push(i);
++   return out;
++ }
++
++ function mean(arr) {
++   return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
++ }
++
++ function variance(arr) {
++   if (arr.length < 2) return 0;
++   const m = mean(arr);
++   return arr.reduce((s, x) => s + (x - m) * (x - m), 0) / (arr.length - 1);
++ }
++
++ function stddev(arr) {
++   return Math.sqrt(variance(arr));
++ }
++
++ function median(arr) {
++   if (!arr.length) return 0;
++   const a = arr.slice().sort((x, y) => x - y);
++   const m = Math.floor(a.length / 2);
++   return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
++ }
++
++ function mode(arr) {
++   const m = new Map();
++   let best = null, cnt = 0;
++   for (const x of arr) {
++     const c = (m.get(x) || 0) + 1; m.set(x, c);
++     if (c > cnt) { cnt = c; best = x; }
++   }
++   return best;
++ }
++
++ function primeFactors(n) {
++   const out = [];
++   let x = Math.abs(n);
++   let d = 2;
++   while (d * d <= x) {
++     while (x % d === 0) { out.push(d); x = Math.floor(x / d); }
++     d += d === 2 ? 1 : 2; // 2,3,5,7...
++   }
++   if (x > 1) out.push(x);
++   return out;
++ }
++
++ function rollingMedian(nums, k) {
++   const res = [];
++   for (let i = 0; i + k <= nums.length; i++) {
++     const win = nums.slice(i, i + k).sort((a, b) => a - b);
++     const mid = (k - 1) >> 1;
++     res.push(win[mid]);
++   }
++   return res;
++ }
++
++ function uniqueMode(nums) {
++   const freq = new Map();
++   let max = 0;
++   for (const x of nums) { const c = (freq.get(x) || 0) + 1; freq.set(x, c); if (c > max) max = c; }
++   if (nums.length === 1) return nums[0];
++   let countMax = 0, val = null;
++   for (const [k, v] of freq.entries()) { if (v === max) { countMax++; val = k; if (countMax > 1) break; } }
++   return countMax === 1 ? val : null;
++ }
++
++ module.exports = {
++   factorial,
++   fibonacci,
++   gcd,
++   lcm,
++   prime,
++   primesUpTo,
++   mean,
++   variance,
++   stddev,
++   median,
++   mode,
++   primeFactors,
++   rollingMedian,
++   uniqueMode
++ };

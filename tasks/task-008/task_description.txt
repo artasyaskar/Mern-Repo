@@ -1,0 +1,51 @@
+task_description: |
+  Add three analytical endpoints with strict integer validation. Ensure behavior is precise and general, matching what tests assert.
+  Instructions:
+  Implement new endpoints with clear 400 handling for invalid input. Favor correctness and reasonably efficient algorithms.
+  Requirements (as tested):
+  - GET /adv/prime_factors
+    Query: n
+    - n: integer >= 2.
+    Behavior:
+    - Return the prime factorization of n as a nondecreasing list of factors (with multiplicity), e.g. 60 -> [2,2,3,5].
+    - Invalid input (non-integer or n < 2) → HTTP 400.
+
+  - GET /adv/rolling_median
+    Query: nums, k
+    - nums: comma-separated integers (no blanks, no decimals). Non-empty.
+    - k: odd integer with 1 <= k <= len(nums).
+    Behavior:
+    - Compute median of each contiguous window of size k over nums (sliding window). For even/odd considerations, k is enforced odd, so median is the middle element when the window is sorted. Return a list of medians as numbers (floats allowed when needed, but with k odd medians are integers if ints input).
+    - Example: nums=1,3,2,6,4 and k=3 → windows: [1,3,2],[3,2,6],[2,6,4] → medians: [2,3,4].
+    - Invalid input (k even, k>len(nums), bad list) → HTTP 400.
+
+  - GET /adv/unique_mode
+    Query: nums
+    - nums: comma-separated integers (no blanks, no decimals). Non-empty.
+    Behavior:
+    - If there is a unique mode (exactly one most frequent value), respond {"result": x}.
+    - If there is a tie for most frequent or all values have frequency 1, return HTTP 400.
+    - Invalid input → HTTP 400.
+
+  Validation helpers:
+  - Enforce integers-only lists strictly. Reject empty lists, blanks, missing values, and non-integers.
+  - Prefer a reusable validator for parsing integer lists and strict integer scalars.
+
+  Files you may need to modify:
+  - server/middleware/validate.js
+  - server/routes/advanced.js
+  - server/services/calculator.js
+
+  Notes:
+  - Prime factorization: trial division up to sqrt(n) is sufficient for tested ranges; handle n up to at least 10^7 within a second.
+  - Rolling median: straightforward O(n*k log k) with per-window sorting is acceptable for moderate n; no need for complex heaps for these tests.
+  - Always return HTTP 400 on invalid input; tests do not require specific error message text.
+
+  Anti-cheating guidance:
+  - Do not hardcode outputs; inputs will vary.
+  - Implement general, deterministic logic without timing or randomized shortcuts.
+
+difficulty: hard
+category: Feature
+tags: [node, express, algorithms]
+parser_name: pytest
