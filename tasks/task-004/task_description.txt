@@ -1,37 +1,37 @@
 task_description: |
   Task: Number theory utilities - Euler's totient, modular inverse, and CRT
   Instructions:
-  Build the endpoints in a simple, steady way, but keep the rules exact so the tests pass.
+  Move through each part calmly, but stick to the exact rules so the tests don’t fail.
 
   Requirements (as tested):
 
   - GET /adv/phi
     Query: n (positive integer)
     Behavior:
-    If n is not a positive integer, return 400.
-    Otherwise return Euler's totient φ(n).
+    If n isn’t a positive integer, return 400.
+    Otherwise return Euler’s totient φ(n).
     Response: { "result": number }
 
   - GET /adv/modinv
     Query: a (integer), m (integer)
     Behavior:
-    If gcd(a, m) is 1, return the modular inverse of a mod m, keeping it inside the range [0, m-1].
+    If gcd(a, m) is 1, return the modular inverse of a mod m, and keep the answer inside the range [0, m-1].
     If gcd(a, m) is not 1, return 400.
     Response: { "result": number }
 
   - POST /adv/crt
     Body (JSON): { "congruences": [ {"a": integer, "m": integer}, ... ] }
     Behavior:
-    Check that the body contains at least two congruences with the keys "a" and "m".
-    Check that all moduli are pairwise coprime; if not, return 400.
-    Return the smallest non-negative solution x in [0, M-1], where M is the product of all moduli.
+    Make sure the body includes at least two congruences, each with "a" and "m".
+    Check that all moduli are pairwise coprime; if any share a common factor, return 400.
+    Find the smallest non-negative solution x in [0, M-1], where M is the product of all moduli.
     Response: { "x": number, "modulus": number }
 
   Notes (not enforced by tests):
-  It helps to ensure m > 1 for modinv.
-  You may strictly validate integers or just validate inline.
-  Common approaches include computing φ by factorization, the modular inverse using the Extended Euclidean Algorithm, and CRT by using modular inverses.
-  Only edit these files:
+  It’s usually safer to keep m > 1 when using modinv.
+  You can check integers strictly or validate them directly in the handlers.
+  Many people compute φ with factorization, use the Extended Euclidean Algorithm for the modular inverse, and rely on these inverses to solve CRT.
+  Edit only these files:
     - server/routes/advanced.js
     - server/services/calculator.js
     - server/middleware/validate.js
