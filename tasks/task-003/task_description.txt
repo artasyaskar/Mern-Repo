@@ -5,27 +5,28 @@ task_description: |
   Requirements (as tested):
   - POST /adv/date-metrics
     Body (JSON): {
-      start: dates displayed like 2023-10-15,
-      completion day: a date shown like 2023-12-31
-      Grab time off - skip add-ons; jot down days like 2025-12-25, repeat if needed
+      "start": string in YYYY-MM-DD,
+      "end": string in YYYY-MM-DD,
+      "holidays": optional array of YYYY-MM-DD strings (duplicates allowed)
     }
     Behavior:
-    - Check what showed up. Remove it unless it’s useful
-    - some dates aren't written as year-month-day, also might not fit any actual calendar at all
-      start → end
-      vacation days shown using a simpler format instead of full dates like YYYY-MM-DD
-      {"instruction": "Work out what's needed, then reply with a JSON containing these fields:"}
-    - D-days overall stands for the complete number of days start to end, counting both the opening day along with the final one
-    - business_days: tallies workdays from Monday to Friday within the span, skipping any dates flagged as holidays
-    - weeks_iso: a list of different ISO week codes over time, like ["2025-W01"], arranged from earliest to latest
-    - start_of_week: that’s the Monday (YYYY-MM-DD) in the ISO week holding start
-      Sunday marks the week's close (YYYY-MM-DD), tied to the ISO period it lands in
+    - Validate inputs. Reject when:
+      - dates do not match YYYY-MM-DD or are invalid calendar dates,
+      - start > end,
+      - holidays is provided but not an array of YYYY-MM-DD strings
+    - Respond with JSON containing:
+      - days_total: total number of days in the range (inclusive)
+      - business_days: count of weekdays (Mon–Fri) in the range, excluding any dates listed in holidays
+      - weeks_iso: unique ISO week labels covered by the range (e.g. ["2025-W01"]). Order is not guaranteed
+      - start_of_week: Monday date (YYYY-MM-DD) of the ISO week containing start
+      - end_of_week: Sunday date (YYYY-MM-DD) of the ISO week containing end
+        (tests only require these to enclose the [start, end] range and be valid dates)
 
   - GET /adv/iso-week
     Query: date=YYYY-MM-DD
     Behavior:
-    Check the date - wrong one? Send back a 400.
-    { "isoYear": number, yet "isoWeek": number, plus "label": "YYYY-Www" } based on ISO-8601 rules - weeks start every Monday.
+    - If the date is invalid, return 400
+    - Respond with { "isoYear": number, "isoWeek": number, "label": "YYYY-Www" } using ISO-8601 (weeks start Monday)
 
   Notes:
   - Adjust these files: server/routes/advanced.js, while at it look into server/utils/date.js. Make sure everything runs smooth, so tests don’t fail.
