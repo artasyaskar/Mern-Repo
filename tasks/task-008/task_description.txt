@@ -1,35 +1,43 @@
 task_description: |
-  Add three analytical endpoints with strict integer validation. Ensure behavior is precise and general, matching what tests assert.
+  Task: Set up three analysis endpoints with strict whole-number checks. Keep the logic clear and broad so it matches test expectations exactly.
+
   Instructions:
-  Implement new endpoints with clear 400 handling for invalid input. Favor correctness and reasonably efficient algorithms.
+  Build new endpoints that return HTTP 400 whenever the input is invalid. Aim for accuracy and use straightforward, practical methods.
+
   Requirements (as tested):
-  - GET /adv/prime_factors
-    Query: n
-    - n: integer >= 2.
-    Behavior:
-    - Return the prime factorization of n as a nondecreasing list of factors (with multiplicity), e.g. 60 -> [2,2,3,5].
-    - Invalid input (non-integer or n < 2) → HTTP 400.
 
-  - GET /adv/rolling_median
-    Query: nums, k
-    - nums: comma-separated integers (no blanks, no decimals). Non-empty.
-    - k: odd integer with 1 <= k <= len(nums).
-    Behavior:
-    - Compute median of each contiguous window of size k over nums (sliding window). For even/odd considerations, k is enforced odd, so median is the middle element when the window is sorted. Return a list of medians as numbers (floats allowed when needed, but with k odd medians are integers if ints input).
-    - Example: nums=1,3,2,6,4 and k=3 → windows: [1,3,2],[3,2,6],[2,6,4] → medians: [2,3,4].
-    - Invalid input (k even, k>len(nums), bad list) → HTTP 400.
+  1. GET /adv/prime_factors
+     Query: n
+     - n must be an integer and at least 2.
+     Behavior:
+     - Return the prime-factor list of n in ascending order, with repeats included.  
+       Example: 60 → [2,2,3,5].
+     - Invalid input (letters, decimals, or values below 2) must produce HTTP 400.
 
-  - GET /adv/unique_mode
-    Query: nums
-    - nums: comma-separated integers (no blanks, no decimals). Non-empty.
-    Behavior:
-    - If there is a unique mode (exactly one most frequent value), respond {"result": x}.
-    - If there is a tie for most frequent or all values have frequency 1, return HTTP 400.
-    - Invalid input → HTTP 400.
+  2. GET /adv/rolling_median
+     Query: nums, k
+     - nums: a comma-separated list of whole numbers, no spaces or decimals. Must not be empty.
+     - k: an odd integer where k ≥ 1 and k does not exceed the length of nums.
+     Behavior:
+     - For each sliding window of size k, sort the window and pick the middle element.
+     - Return the list of these medians. Results may be decimals, though whole-number inputs will result in whole medians.
+     Example:
+       nums = 1,3,2,6,4 and k = 3  
+       Windows: [1,3,2], [3,2,6], [2,6,4]  
+       Medians: [2,3,4]
+     - Invalid input (even k, k too large, malformed nums) must produce HTTP 400.
+
+  3. GET /adv/unique_mode
+     Query: nums
+     - nums: a comma-separated list of whole numbers with no spaces or decimals. Must not be empty.
+     Behavior:
+     - If exactly one value appears most often, return {"result": x}.
+     - If there is a tie for highest frequency, or every value appears once, return HTTP 400.
+     - Any invalid input also returns HTTP 400.
 
   Validation helpers:
-  - Enforce integers-only lists strictly. Reject empty lists, blanks, missing values, and non-integers.
-  - Prefer a reusable validator for parsing integer lists and strict integer scalars.
+  - Only allow whole numbers. No empty lists, missing values, or text.
+  - Use a shared validator that can handle single numbers and number lists.
 
   Files you may need to modify:
   - server/middleware/validate.js
@@ -37,13 +45,13 @@ task_description: |
   - server/services/calculator.js
 
   Notes:
-  - Prime factorization: trial division up to sqrt(n) is sufficient for tested ranges; handle n up to at least 10^7 within a second.
-  - Rolling median: straightforward O(n*k log k) with per-window sorting is acceptable for moderate n; no need for complex heaps for these tests.
-  - Always return HTTP 400 on invalid input; tests do not require specific error message text.
+  - Prime factorization using trial division up to sqrt(n) is fast enough for numbers up to 10^7.
+  - Rolling median with simple sorting per window (O(nk log k)) is acceptable.
+  - Always return HTTP 400 for bad inputs; test cases only check the status code.
 
   Anti-cheating guidance:
-  - Do not hardcode outputs; inputs will vary.
-  - Implement general, deterministic logic without timing or randomized shortcuts.
+  - Do not rely on fixed values; tests will change input.
+  - Use basic, consistent logic without timing tricks or shortcuts.
 
 difficulty: hard
 category: Feature
