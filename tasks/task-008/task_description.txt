@@ -1,57 +1,59 @@
 task_description: |
-  Task: Set up three analysis endpoints with strict whole-number checks. Keep the logic clear and broad so it matches test expectations exactly.
+  Task: Set up three check points - stick to precise numbers at every one. Create the setup so it flows smoothly, but stays broad enough to cover all testing demands on goal.
 
   Instructions:
-  Build new endpoints that return HTTP 400 whenever the input is invalid. Aim for accuracy and use straightforward, practical methods.
+  Launch new endpoints that return HTTP 400 when data's wrong. Aim sharp - use direct, practical methods instead.
 
   Requirements (as tested):
 
   1. GET /adv/prime_factors
-     Query: n
-     - n must be an integer and at least 2.
-     Behavior:
-     - Return the prime-factor list of n in ascending order, with repeats included.  
-       Example: 60 → [2,2,3,5].
-     - Invalid input (letters, decimals, or values below 2) must produce HTTP 400.
+  Query: n
+  n must be an integer, besides that it’s at least 2.
+  Behavior:
+  Hand over the prime factors of n, put them from low to high, include duplicates when necessary.
+  60 becomes [2,2,3,5].
+  If someone types letters or decimals, bounce them with a HTTP 400. Or if they try a number below two, hit 'em with the same error.
 
   2. GET /adv/rolling_median
-     Query: nums, k
-     - nums: a comma-separated list of whole numbers, no spaces or decimals. Must not be empty.
-     - k: an odd integer where k ≥ 1 and k does not exceed the length of nums.
-     Behavior:
-     - For each sliding window of size k, sort the window and pick the middle element.
-     - Return the list of these medians. Results may be decimals, though whole-number inputs will result in whole medians.
-     Example:
-       nums = 1,3,2,6,4 and k = 3  
-       Windows: [1,3,2], [3,2,6], [2,6,4]  
-       Medians: [2,3,4]
-     - Invalid input (even k, k too large, malformed nums) must produce HTTP 400.
+  Query: nums, k
+  - nums: list of whole numbers separated by commas, no spaces or periods. Needs at least one value.
+  k: an odd integer starting from 1, never larger than the count of elements in nums.
+  Behavior:
+  - For each group of k things, sort 'em first - then pick the middle one.
+  - Return the group of inner digits. Results might include fractions, yet when beginning with integers, outcomes stay complete.
+  Example:
+  nums are 1,3,2,6,4 but k equals 3
+  Windows: [1,3,2], [3,2,6], [2,6,4]
+  Medians: [2,3,4]
+  If the input's off - say, k is even, or far too large, or the numbers are scrambled - shoot back a 400 error.
 
   3. GET /adv/unique_mode
-     Query: nums
-     - nums: a comma-separated list of whole numbers with no spaces or decimals. Must not be empty.
-     Behavior:
-     - If exactly one value appears most often, return {"result": x}.
-     - If there is a tie for highest frequency, or every value appears once, return HTTP 400.
-     - Any invalid input also returns HTTP 400.
+  Query: nums
+  nums: list of whole numbers, separated by commas - no spaces, no periods. Must not be empty.
+  Behavior:
+  - If one number pops up more often than the rest, return {"result": x}.
+  If several values tie for highest frequency, return HTTP 400 instead.
+  A single entry, such as nums="42", runs without issues - gives back 200 along with the value.
+  - If you enter incorrect info, the system returns an HTTP 400 error instead.
 
   Validation helpers:
-  - Only allow whole numbers. No empty lists, missing values, or text.
-  - Use a shared validator that can handle single numbers and number lists.
+  1234567890.
+  Give it a shot - one tool fits single numbers or bunches, doesn’t matter. Checks singles the same way as chunks, zero tweaks required. Deals with any situation smooth-like, two digits or twenty. Works how you need, no headaches.
 
-  Files you may need to modify:
+  Things you may need to adjust:
   - server/middleware/validate.js
   - server/routes/advanced.js
   - server/services/calculator.js
 
   Notes:
-  - Prime factorization using trial division up to sqrt(n) is fast enough for numbers up to 10^7.
-  - Rolling median with simple sorting per window (O(nk log k)) is acceptable.
-  - Always return HTTP 400 for bad inputs; test cases only check the status code.
+  Splitting a number by trying divisors up to its root? Solid for figures below ten million.
+  - Rolling mean with simple sorting inside every segment (O(nk log k)) runs okay.
+  - Send back HTTP 400 whenever data's off; checks confirm the code through when rather than directly.
+  Looks at key moves linked to those points - doesn’t hit every detail. This plan lines up tight with what the tests verify, no extra fluff.
 
   Anti-cheating guidance:
-  - Do not rely on fixed values; tests will change input.
-  - Use basic, consistent logic without timing tricks or shortcuts.
+  - Ignore fixed values – outputs change during checks.
+  Keep things clear - skip shortcuts or fast tricks while you go. Instead, focus on basic logic without rushing ahead.
 
 difficulty: hard
 category: Feature
