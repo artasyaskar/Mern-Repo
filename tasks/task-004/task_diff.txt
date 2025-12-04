@@ -1,0 +1,227 @@
+diff --git a/server/middleware/validate.js b/server/middleware/validate.js
+index a1d95b8..0610413 100644
+--- a/server/middleware/validate.js
++++ b/server/middleware/validate.js
+@@ -1 +1,42 @@
+-function requireNumbers(keys){return function(req,res,next){for(const k of keys){const v=Number(req.query[k]);if(Number.isNaN(v)){res.status(400).json({error:k});return;}}next();};}module.exports={requireNumbers};
++function requireNumbers(keys){
++  return function (req, res, next) {
++    for (const k of keys) {
++      const raw = req.query[k];
++      if (raw === undefined) {
++        res.status(400).json({ error: k });
++        return;
++      }
++      const v = Number(raw);
++      if (!Number.isFinite(v)) {
++        res.status(400).json({ error: k });
++        return;
++      }
++    }
++    next();
++  };
++}
++
++function requireIntegers(keys){
++  return function (req, res, next) {
++    for (const k of keys) {
++      const raw = req.query[k];
++      if (raw === undefined) {
++        res.status(400).json({ error: k });
++        return;
++      }
++      // Only accept canonical integer strings like "-5" or "10"
++      if (typeof raw !== 'string' || !/^[-]?\d+$/.test(raw)) {
++        res.status(400).json({ error: k });
++        return;
++      }
++      const v = Number(raw);
++      if (!Number.isFinite(v) || !Number.isInteger(v)) {
++        res.status(400).json({ error: k });
++        return;
++      }
++    }
++    next();
++  };
++}
++
++module.exports = { requireNumbers, requireIntegers };
+diff --git a/server/routes/advanced.js b/server/routes/advanced.js
+index 0144b18..8bdbc14 100644
+--- a/server/routes/advanced.js
++++ b/server/routes/advanced.js
+@@ -1 +1,71 @@
+-const express=require('express');const {requireNumbers}=require('../middleware/validate');const {factorial,fibonacci,gcd,lcm,primesUpTo}=require('../services/calculator');const router=express.Router();router.get('/factorial',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:factorial(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/fibonacci',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:fibonacci(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/gcd',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:gcd(a,b)})});router.get('/lcm',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:lcm(a,b)})});router.get('/primes',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);res.json({result:primesUpTo(n)})});module.exports=router;
++const express = require('express');
++const { requireNumbers, requireIntegers } = require('../middleware/validate');
++const { factorial, fibonacci, gcd, lcm, primesUpTo, phi, modInverse, crtSolve } = require('../services/calculator');
++const router = express.Router();
++
++router.get('/factorial', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  try { res.json({ result: factorial(n) }); }
++  catch(e){ res.status(400).json({ error: e.message }); }
++});
++
++router.get('/fibonacci', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  try { res.json({ result: fibonacci(n) }); }
++  catch(e){ res.status(400).json({ error: e.message }); }
++});
++
++router.get('/gcd', requireNumbers(['a','b']), (req,res) => {
++  const a = Number(req.query.a);
++  const b = Number(req.query.b);
++  res.json({ result: gcd(a,b) });
++});
++
++router.get('/lcm', requireNumbers(['a','b']), (req,res) => {
++  const a = Number(req.query.a);
++  const b = Number(req.query.b);
++  res.json({ result: lcm(a,b) });
++});
++
++router.get('/primes', requireNumbers(['n']), (req,res) => {
++  const n = Number(req.query.n);
++  res.json({ result: primesUpTo(n) });
++});
++
++// New endpoints for task-004
++router.get('/phi', requireIntegers(['n']), (req,res) => {
++  const n = Number(req.query.n);
++  if (n < 1) { res.status(400).json({ error: 'n' }); return; }
++  try { res.json({ result: phi(n) }); }
++  catch(e){ res.status(400).json({ error: e.message }); }
++});
++
++router.get('/modinv', requireIntegers(['a','m']), (req,res) => {
++  const a = Number(req.query.a);
++  const m = Number(req.query.m);
++  if (m <= 1) { res.status(400).json({ error: 'm' }); return; }
++  try { res.json({ result: modInverse(a, m) }); }
++  catch(e){ res.status(400).json({ error: e.message }); }
++});
++
++router.post('/crt', (req,res) => {
++  const body = req.body;
++  if (!body || !Array.isArray(body.congruences) || body.congruences.length < 2) {
++    res.status(400).json({ error: 'congruences' }); return;
++  }
++  const congruences = [];
++  for (const c of body.congruences) {
++    if (!c || !Number.isInteger(c.a) || !Number.isInteger(c.m) || c.m <= 1) {
++      res.status(400).json({ error: 'congruence' }); return;
++    }
++    congruences.push({ a: c.a, m: c.m });
++  }
++  try {
++    const resCRT = crtSolve(congruences);
++    res.json(resCRT);
++  } catch (e) {
++    res.status(400).json({ error: e.message });
++  }
++});
++
++module.exports = router;
+diff --git a/server/services/calculator.js b/server/services/calculator.js
+index fb5ba03..567269e 100644
+--- a/server/services/calculator.js
++++ b/server/services/calculator.js
+@@ -1 +1,96 @@
+-function factorial(n){if(n<0)throw new Error('neg');let r=1;for(let i=2;i<=n;i++)r*=i;return r;}function fibonacci(n){if(n<0)throw new Error('neg');let a=0,b=1;for(let i=0;i<n;i++){[a,b]=[b,a+b];}return a;}function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}function lcm(a,b){if(a===0||b===0)return 0;return Math.abs(a*b)/gcd(a,b);}function prime(n){if(n<2)return false;for(let i=2;i*i<=n;i++){if(n%i===0)return false;}return true;}function primesUpTo(n){const out=[];for(let i=2;i<=n;i++){if(prime(i))out.push(i);}return out;}function mean(arr){return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0;}function variance(arr){if(arr.length<2)return 0;const m=mean(arr);return arr.reduce((s,x)=>s+(x-m)*(x-m),0)/(arr.length-1);}function stddev(arr){return Math.sqrt(variance(arr));}module.exports={factorial,fibonacci,gcd,lcm,prime,primesUpTo,mean,variance,stddev};
++function factorial(n){
++   if(n<0) throw new Error('neg');
++   let r=1; for(let i=2;i<=n;i++) r*=i; return r;
++ }
++ function fibonacci(n){
++   if(n<0) throw new Error('neg');
++   let a=0,b=1; for(let i=0;i<n;i++){[a,b]=[b,a+b];} return a;
++ }
++ function gcd(a,b){
++   a=Math.abs(a); b=Math.abs(b);
++   while(b){ [a,b]=[b,a%b]; }
++   return a;
++ }
++ function lcm(a,b){
++   if(a===0||b===0) return 0; return Math.abs(a*b)/gcd(a,b);
++ }
++ function prime(n){
++   if(n<2) return false; for(let i=2;i*i<=n;i++){ if(n%i===0) return false; } return true;
++ }
++ function primesUpTo(n){
++   const out=[]; for(let i=2;i<=n;i++){ if(prime(i)) out.push(i); } return out;
++ }
++ function mean(arr){ return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0; }
++ function variance(arr){ if(arr.length<2) return 0; const m=mean(arr); return arr.reduce((s,x)=>s+(x-m)*(x-m),0)/(arr.length-1); }
++ function stddev(arr){ return Math.sqrt(variance(arr)); }
++ 
++ // Euler's totient using factorization: O(sqrt(n))
++ function phi(n){
++   if(!Number.isInteger(n) || n<1) throw new Error('invalid n');
++   let result = n;
++   let x = n;
++   for(let p=2; p*p<=x; p++){
++     if(x % p === 0){
++       while(x % p === 0) x = Math.trunc(x / p);
++       result -= Math.trunc(result / p);
++     }
++   }
++   if(x > 1){
++     result -= Math.trunc(result / x);
++   }
++   return result;
++ }
++ 
++ function egcd(a,b){
++   let x0=1, y0=0, x1=0, y1=1;
++   while(b!==0){
++     const q = Math.trunc(a/b);
++     [a,b] = [b, a - q*b];
++     [x0,x1] = [x1, x0 - q*x1];
++     [y0,y1] = [y1, y0 - q*y1];
++   }
++   return { g: Math.abs(a), x: x0, y: y0 };
++ }
++ 
++ function modNormalize(a,m){
++   return ((a % m) + m) % m;
++ }
++ 
++ function modInverse(a,m){
++   if(!Number.isInteger(a) || !Number.isInteger(m) || m<=1) throw new Error('invalid');
++   a = modNormalize(a, m);
++   const { g, x } = egcd(a, m);
++   if(g !== 1) throw new Error('not coprime');
++   return modNormalize(x, m);
++ }
++ 
++ // Chinese Remainder Theorem for pairwise coprime moduli
++ function crtSolve(congruences){
++   if(!Array.isArray(congruences) || congruences.length < 2) throw new Error('invalid');
++   for(const c of congruences){
++     if(!c || !Number.isInteger(c.a) || !Number.isInteger(c.m) || c.m <= 1) throw new Error('invalid');
++   }
++   // pairwise coprime check
++   for(let i=0;i<congruences.length;i++){
++     for(let j=i+1;j<congruences.length;j++){
++       if(gcd(congruences[i].m, congruences[j].m) !== 1) throw new Error('not pairwise coprime');
++     }
++   }
++   const M = congruences.reduce((acc,c)=>acc*c.m, 1);
++   let sum = 0n;
++   const Mb = BigInt(M);
++   for(const {a,m} of congruences){
++     const mi = BigInt(m);
++     const Mi = Mb / mi;
++     const inv = BigInt(modInverse(Number(Mi % mi), m));
++     sum += BigInt(a) * Mi * inv;
++   }
++   let x = sum % Mb;
++   if(x < 0n) x += Mb;
++   return { x: Number(x), modulus: M };
++ }
++ 
++ module.exports={
++   factorial,fibonacci,gcd,lcm,prime,primesUpTo,mean,variance,stddev,
++   phi, modInverse, crtSolve
++ };
