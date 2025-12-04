@@ -1,42 +1,42 @@
 task_description: |
   Task: Number theory utilities - Euler's totient, modular inverse, and CRT
   Instructions:
-  Implement the endpoints below with the exact request/response schemas and validation rules.
+  Set up the links underneath using the precise input/output formats along with the required check rules. Follow the structure exactly as shown.
 
   Requirements (as tested):
 
   - GET /adv/phi
     Query parameters:
-    - n: required, positive integer provided as a canonical integer string (regex: ^-?\d+$)
-      Examples rejected: "10.0", 3.5, null/undefined, 0, negative values.
+    - n: needed, must be a whole number above zero, provided as basic digit text (pattern: ^-?\d+$)
+      Examples that don't work: "10.0", 3.5, null, undefined, 0, or negative values.
     Behavior:
-    - If n is not a canonical integer string or n <= 0, return HTTP 400.
+    - If n isn't in standard whole-number form or it's less than or equal to zero, send back HTTP 400.
     - Otherwise return Euler's totient φ(n).
     Response JSON:
-    - { "result": number }
+    - { "outcome": number }
 
   - GET /adv/modinv
     Query parameters:
-    - a: required integer
-    - m: required integer
+    - a: needed whole number
+    - m: an integer you need
     Behavior:
-    - If gcd(a, m) == 1, return the modular inverse of a modulo m, normalized to [0, m-1].
-    - If gcd(a, m) != 1, return HTTP 400.
+    - If gcd(a, m) equals 1, return the modular inverse of a mod m, adjusted to fit within [0, m-1].
+    - If gcd(a, m) isn’t 1, send back HTTP 400.
     Response JSON:
-    - { "result": number }
+    - { "outcome": numeric value }
 
   - POST /adv/crt
     Request body (JSON):
     - { "congruences": [ { "a": int, "m": int }, ... ] }
     Validation rules:
-    - Body must include an array "congruences" with at least two items.
-    - Each item must have integer fields a and m.
-    - All moduli m must be pairwise coprime; otherwise return HTTP 400.
+    - The body should have a list called "congruences" with at least two items.
+    - Every entry must have whole-number values for a and m.
+    - All moduli m must share no common factors besides one; otherwise send back HTTP 400.
     Behavior:
     - Solve x ≡ a_i (mod m_i) and return the smallest non-negative solution x in [0, M-1],
-      where M is the product of all moduli.
+      where M is the product of all the moduli.
     Response JSON:
-    - { "x": number, "modulus": number }
+    - { "x": value, "modulus": size }
 
   Files to edit (only these):
   - server/routes/advanced.js
