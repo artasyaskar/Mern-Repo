@@ -24,3 +24,17 @@ task_description: |
   Validation helpers:
   - Add an integer-only validator middleware (e.g., requireIntegers) to reject non-integer numeric inputs.
   - Reuse across gcd, lcm and new endpoints.
+
+  Concrete files to modify (reference implementation paths):
+  - server/middleware/validate.js
+  - server/routes/advanced.js
+  - server/services/calculator.js
+
+  Anti-cheating guidance:
+  - Do not hardcode responses for specific inputs. Tests include multiple varied inputs and randomized cases to ensure general solutions.
+  - Implement general algorithms (extended Euclid, prime generation, CSV formatting) and robust validation.
+
+difficulty: hard
+category: Feature
+tags: [node, express, algorithms]
+parser_name: pytest
