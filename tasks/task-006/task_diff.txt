@@ -1,0 +1,96 @@
+diff --git a/server/middleware/validate.js b/server/middleware/validate.js
+index a1d95b8..3c695c8 100644
+--- a/server/middleware/validate.js
++++ b/server/middleware/validate.js
+@@ -1 +1,3 @@
+-function requireNumbers(keys){return function(req,res,next){for(const k of keys){const v=Number(req.query[k]);if(Number.isNaN(v)){res.status(400).json({error:k});return;}}next();};}module.exports={requireNumbers};
++function requireNumbers(keys){return function(req,res,next){for(const k of keys){const raw=req.query[k];const v=Number(raw);if(raw===undefined||raw===''||Number.isNaN(v)){res.status(400).json({error:k});return;}}next();};}
++function requireIntegers(keys){return function(req,res,next){for(const k of keys){const raw=req.query[k];const v=Number(raw);if(raw===undefined||raw===''||Number.isNaN(v)||!Number.isInteger(v)){res.status(400).json({error:k});return;}}next();};}
++module.exports={requireNumbers,requireIntegers};
+diff --git a/server/routes/advanced.js b/server/routes/advanced.js
+index 0144b18..c699b76 100644
+--- a/server/routes/advanced.js
++++ b/server/routes/advanced.js
+@@ -1 +1,67 @@
+-const express=require('express');const {requireNumbers}=require('../middleware/validate');const {factorial,fibonacci,gcd,lcm,primesUpTo}=require('../services/calculator');const router=express.Router();router.get('/factorial',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:factorial(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/fibonacci',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:fibonacci(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/gcd',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:gcd(a,b)})});router.get('/lcm',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:lcm(a,b)})});router.get('/primes',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);res.json({result:primesUpTo(n)})});module.exports=router;
++const express=require('express');
++const {requireNumbers,requireIntegers}=require('../middleware/validate');
++const {factorial,fibonacci,gcd,lcm,primesUpTo,powmod,modinv,crt2,primesSegment,mean,variance,stddev,gcdArray}=require('../services/calculator');
++const router=express.Router();
++
++// existing endpoints
++router.get('/factorial',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:factorial(n)})}catch(e){res.status(400).json({error:e.message})}});
++router.get('/fibonacci',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:fibonacci(n)})}catch(e){res.status(400).json({error:e.message})}});
++router.get('/gcd',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:gcd(a,b)})});
++router.get('/lcm',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:lcm(a,b)})});
++router.get('/primes',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);res.json({result:primesUpTo(n)})});
++
++// task-006 endpoints
++router.get('/powmod',requireIntegers(['a','b','m']),(req,res)=>{
++  const a=Number(req.query.a), b=Number(req.query.b), m=Number(req.query.m);
++  if(b<0 || m<=1){res.status(400).json({error:'range'});return;}
++  res.json({result:powmod(a,b,m)});
++});
++
++router.get('/modinv',requireIntegers(['a','m']),(req,res)=>{
++  const a=Number(req.query.a), m=Number(req.query.m);
++  if(m<=1){res.status(400).json({error:'m'});return;}
++  const inv=modinv(a,m);
++  if(inv===null){res.status(400).json({error:'no_inverse'});return;}
++  res.json({result:inv});
++});
++
++router.get('/crt',requireIntegers(['a1','m1','a2','m2']),(req,res)=>{
++  const a1=Number(req.query.a1), m1=Number(req.query.m1), a2=Number(req.query.a2), m2=Number(req.query.m2);
++  if(m1<=1||m2<=1){res.status(400).json({error:'moduli'});return;}
++  const sol=crt2(a1,m1,a2,m2);
++  if(!sol){res.status(400).json({error:'inconsistent'});return;}
++  res.json(sol);
++});
++
++router.get('/primes_segment',requireIntegers(['L','R']),(req,res)=>{
++  const L=Number(req.query.L), R=Number(req.query.R);
++  const fmt=(req.query.format||'json').toString().toLowerCase();
++  if(L<2 || L>R){res.status(400).json({error:'range'});return;}
++  const arr=primesSegment(L,R);
++  if(fmt==='csv'){
++    res.setHeader('Content-Type','text/csv');
++    res.send(['prime',...arr.map(String)].join('\n'));
++  }else{
++    res.json({result:arr});
++  }
++});
++
++router.get('/stats',(req,res)=>{
++  const raw=req.query.nums;
++  if(typeof raw!=='string' || raw.trim()===''){res.status(400).json({error:'nums'});return;}
++  const parts=raw.split(',');
++  const nums=[];
++  for(const p of parts){if(p.trim()===''){res.status(400).json({error:'nums'});return;}const v=Number(p);if(!Number.isInteger(v)){res.status(400).json({error:'nums'});return;}nums.push(v);}
++  res.json({mean:mean(nums),variance:variance(nums),stddev:stddev(nums)});
++});
++
++router.get('/gcd_array',(req,res)=>{
++  const raw=req.query.nums;
++  if(typeof raw!=='string' || raw.trim()===''){res.status(400).json({error:'nums'});return;}
++  const parts=raw.split(',');
++  const nums=[];
++  for(const p of parts){if(p.trim()===''){res.status(400).json({error:'nums'});return;}const v=Number(p);if(!Number.isInteger(v)){res.status(400).json({error:'nums'});return;}nums.push(v);}
++  res.json({result:gcdArray(nums)});
++});
++
++module.exports=router;
+diff --git a/server/services/calculator.js b/server/services/calculator.js
+index fb5ba03..8b154a2 100644
+--- a/server/services/calculator.js
++++ b/server/services/calculator.js
+@@ -1 +1,8 @@
+-function factorial(n){if(n<0)throw new Error('neg');let r=1;for(let i=2;i<=n;i++)r*=i;return r;}function fibonacci(n){if(n<0)throw new Error('neg');let a=0,b=1;for(let i=0;i<n;i++){[a,b]=[b,a+b];}return a;}function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}function lcm(a,b){if(a===0||b===0)return 0;return Math.abs(a*b)/gcd(a,b);}function prime(n){if(n<2)return false;for(let i=2;i*i<=n;i++){if(n%i===0)return false;}return true;}function primesUpTo(n){const out=[];for(let i=2;i<=n;i++){if(prime(i))out.push(i);}return out;}function mean(arr){return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0;}function variance(arr){if(arr.length<2)return 0;const m=mean(arr);return arr.reduce((s,x)=>s+(x-m)*(x-m),0)/(arr.length-1);}function stddev(arr){return Math.sqrt(variance(arr));}module.exports={factorial,fibonacci,gcd,lcm,prime,primesUpTo,mean,variance,stddev};
++function factorial(n){if(n<0)throw new Error('neg');let r=1;for(let i=2;i<=n;i++)r*=i;return r;}function fibonacci(n){if(n<0)throw new Error('neg');let a=0,b=1;for(let i=0;i<n;i++){[a,b]=[b,a+b];}return a;}function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}function lcm(a,b){if(a===0||b===0)return 0;return Math.abs(a*b)/gcd(a,b);}function prime(n){if(n<2)return false;for(let i=2;i*i<=n;i++){if(n%i===0)return false;}return true;}function primesUpTo(n){const out=[];for(let i=2;i<=n;i++){if(prime(i))out.push(i);}return out;}function mean(arr){return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0;}function variance(arr){if(arr.length===0)return 0;const m=mean(arr);return arr.reduce((s,x)=>s+(x-m)*(x-m),0)/arr.length;}function stddev(arr){return Math.sqrt(variance(arr));}
++function powmod(a,b,m){a=((a%m)+m)%m;let res=1%m;let base=a;let e=b>>>0;while(e>0){if(e&1)res=(res*base)%m;base=(base*base)%m;e=Math.floor(e/2);}return res;}
++function egcd(a,b){let old_r=Math.abs(a),r=Math.abs(b),old_s=1,s=0,old_t=0,t=1;while(r!==0){const q=Math.floor(old_r/r);[old_r,r]=[r,old_r-q*r];[old_s,s]=[s,old_s-q*s];[old_t,t]=[t,old_t-q*t];}return {g:old_r,x:old_s*(a<0?-1:1),y:old_t*(b<0?-1:1)};}
++function modinv(a,m){a=((a%m)+m)%m;const {g,x}=egcd(a,m);if(g!==1)return null;let inv=x%m;if(inv<0)inv+=m;return inv;}
++function crt2(a1,m1,a2,m2){const g=gcd(m1,m2);if(((a2-a1)%g+g)%g!==0)return null;const m1p=m1/g,m2p=m2/g;const diff=((a2-a1)/g);const inv=modinv(m1p,m2p);if(inv===null)return null;let t=(diff*inv)%m2p;if(t<0)t+=m2p;const l=m1*m2p;let x=(a1 + m1*t)%l; if(x<0)x+=l;return {x,m:l};}
++function primesSegment(L,R){const limit=R;const sieve=new Array(limit+1).fill(true);sieve[0]=false;sieve[1]=false;for(let p=2;p*p<=limit;p++){if(sieve[p]){for(let q=p*p;q<=limit;q+=p)sieve[q]=false;}}const out=[];for(let i=Math.max(2,L);i<=R;i++){if(sieve[i])out.push(i);}return out;}
++function gcdArray(arr){if(!arr.length)return 0;let g=Math.abs(arr[0]);for(let i=1;i<arr.length;i++){g=gcd(g,arr[i]);}return g;}
++module.exports={factorial,fibonacci,gcd,lcm,prime,primesUpTo,mean,variance,stddev,powmod,egcd,modinv,crt2,primesSegment,gcdArray};

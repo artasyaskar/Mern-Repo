@@ -1,0 +1,49 @@
+task_description: |
+  Task: Advanced number theory endpoints with strict integer validation and performance targets.
+  Instructions:
+  Implement new advanced endpoints with robust validation. Keep algorithms efficient and results normalized.
+  Requirements (as tested):
+  - GET /adv/powmod
+    - Params: a, b, m (integers). b >= 0, m > 1. Return JSON {"result": a^b mod m}.
+    - Must reject non-integers and invalid ranges with HTTP 400.
+    - Performance: handle large exponents (e.g., b around 10^7) quickly using exponentiation by squaring.
+
+  - GET /adv/modinv
+    - Params: a, m (integers, m > 1). Return JSON {"result": x} where (a*x) % m == 1 with 0 <= x < m.
+    - If inverse doesn't exist (gcd(a,m) != 1), return HTTP 400 with error.
+
+  - GET /adv/crt
+    - Params: a1, m1, a2, m2 (integers, m1>1, m2>1). Return JSON {"x": x, "m": lcm(m1,m2)} where x solves x≡a1 (mod m1), x≡a2 (mod m2), 0 <= x < lcm.
+    - If no solution (inconsistent residues), return HTTP 400.
+
+  - GET /adv/primes_segment
+    - Params: L, R (integers, 2 <= L <= R). Optional format ("json"|"csv").
+    - format=json (default): {"result": [primes in [L,R]]}.
+    - format=csv: text/csv with header "prime" then one prime per line.
+    - Performance: R up to 100000 must complete under 1.5 seconds in json mode.
+
+  - GET /adv/stats
+    - Param: nums (comma-separated integers). Reject empty or any non-integer -> HTTP 400.
+    - Return JSON {"mean": m, "variance": v, "stddev": s} with sample variance (n-1 in denominator). Values as numbers.
+
+  - GET /adv/gcd_array
+    - Param: nums (comma-separated integers). Reject empty or any non-integer -> HTTP 400.
+    - Return JSON {"result": gcd of all absolute values}.
+
+  Validation helpers:
+  - Use an integer-only validator (like requireIntegers) for endpoints that require integers.
+  - For list parameters, validate each token is an integer and no empties.
+
+  Example files that will likely require changes:
+  - server/middleware/validate.js
+  - server/routes/advanced.js
+  - server/services/calculator.js
+
+  Anti-cheating guidance:
+  - Do not hardcode responses for specific inputs. Tests include varied inputs and performance checks.
+  - Implement general algorithms: fast powmod, extended Euclid for modinv/CRT, segmented sieve for prime ranges, numeric stats.
+
+difficulty: very_hard
+category: Feature
+tags: [node, express, algorithms, number-theory]
+parser_name: pytest
