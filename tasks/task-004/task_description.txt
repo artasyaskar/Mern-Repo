@@ -1,49 +1,37 @@
 task_description: |
   Task: Number theory utilities - Euler's totient, modular inverse, and CRT
   Instructions:
-  Use reliable number tools that work well, while adding strong safeguards to stop mistakes.
+  Implement endpoints with correct behavior and clear validation.
   Requirements (as tested):
 
-  - GET /adv/phi  
-    n's a figure that’s more than nothing  
-    Behavior:  
-    See whether n is a positive integer. If not right, return 400.  
-    - Figure out Euler’s totient φ(n): count how many numbers between 1 and n don’t divide evenly into n except for 1.  
-      { "result": 5 }
-
-  - GET /adv/modinv  
-    a's a whole number, while m represents some other whole number bigger than one  
-    Behavior:  
-    See whether the two numbers are complete ones, while ensuring m exceeds one. Otherwise, return 400.  
-    Look for the value that, once times a, then split by m, makes 1.  
-    If gcd(a, m) isn’t 1, return a 400 since it failed the check.  
-    Fix the inverse to stay between 0 and m minus one.  
-      { "result": 7 }
-
-  - POST /adv/crt  
-    Body (JSON): {
-      a stands for a full number, while m means more than one; this pattern keeps going in the same way
-    }
+  - GET /adv/phi
+    Query: n (positive integer)
     Behavior:
-    Look over the form - make sure it lines up while checking you have at least two pieces that fit together.  
-    Look at each 'a' along with 'm' - they’ve got to be full numbers; besides that, double-check no moduli have matching factors - if something’s wrong, toss out 400.  
-    Solve x ≡ a_i (mod m_i), after that return the result.  
-    Look for the smallest x that's zero or more, inside 0 to M minus one - at the same time get the full modulus M by combining all m_i numbers through multiplication.  
-      {x: val, modulus: sum}
+    - Return 400 when n is not a positive integer.
+    - Return Euler's totient φ(n).
+    Response: { "result": number }
 
-  Clue list tips – still work even if skipped:
-  You might tighten the middleware check for GET routes - shut down any non-integer values - or deal with validation on the spot; either way, stay aligned with earlier guidance.
+  - GET /adv/modinv
+    Query: a (integer), m (integer)
+    Behavior:
+    - When gcd(a, m) == 1, return the modular inverse of a mod m, normalized to [0, m-1].
+    - When gcd(a, m) != 1, return 400.
+    Response: { "result": number }
 
-  Here’s a look at what happens behind the scenes - testing won’t catch these bits:
-  - φ(n) could try dividing numbers step by step, needing roughly O(√n) tries – time changes based on n's size.  
-  - A typical method for modinv uses Extended Euclid - handle negative a early by tweaking it.  
-  - CRT relies on modular inverses, while building things gradually.
+  - POST /adv/crt
+    Body (JSON): { "congruences": [ {"a": int, "m": int}, ... ] }
+    Behavior:
+    - Validate body shape with at least two congruences.
+    - Validate pairwise-coprime moduli; otherwise 400.
+    - Return the smallest non-negative solution x in [0, M-1] and combined modulus M = product of moduli.
+    Response: { "x": number, "modulus": number }
 
-  notes:
-  - Instead edit server/routes/advanced.js, while adjusting server/services/calculator.js - also change server/middleware/validate.js at the same time.  
-  - Focus on the current file rather than jumping to another one.
+  Notes (not enforced by tests):
+  - Prefer to validate m > 1 for modinv.
+  - You may use a strict integer-only query validator; inline validation is also acceptable.
+  - Typical implementations: φ via factorization (O(√n)), modinv via Extended Euclid, CRT via modular inverses.
 
-difficulty: hard
-category: Feature
-tags: [node, express, algorithms, number-theory]
-parser_name: pytest
+  difficulty: hard
+  category: Feature
+  tags: [node, express, algorithms, number-theory]
+  parser_name: pytest
