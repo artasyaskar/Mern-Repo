@@ -1,36 +1,36 @@
 task_description: |
   Task: Number theory utilities - Euler's totient, modular inverse, and CRT
   Instructions:
-  Move through each part calmly, but stick to the exact rules so the tests don’t fail.
+  Go step by step without rushing, but still follow the exact rules or the tests will misbehave.
 
   Requirements (as tested):
 
   - GET /adv/phi
-    Query: n (positive integer)
+    n is a positive whole number
     Behavior:
-    If n isn’t a positive integer, return 400.
-    Otherwise return Euler’s totient φ(n).
-    Response: { "result": number }
+    If n is zero or below, return 400. If n isn’t an integer at all, also return 400.
+    Otherwise send back Euler’s totient φ(n).
+    Answer: { "result": number }
 
   - GET /adv/modinv
-    Query: a (integer), m (integer)
+    a is an integer; m is another integer
     Behavior:
-    If gcd(a, m) is 1, return the modular inverse of a mod m, and keep the answer inside the range [0, m-1].
-    If gcd(a, m) is not 1, return 400.
-    Response: { "result": number }
+    If gcd(a, m) equals 1, return the modular inverse of a mod m, keeping it inside 0 through m−1.
+    If gcd(a, m) isn’t 1, return 400.
+    Answer: { "result": number }
 
   - POST /adv/crt
-    Body (JSON): { "congruences": [ {"a": integer, "m": integer}, ... ] }
+    Body (JSON): { "congruences": [ {"a": number, "m": number}, ... ] }
     Behavior:
-    Make sure the body includes at least two congruences, each with "a" and "m".
-    Check that all moduli are pairwise coprime; if any share a common factor, return 400.
-    Find the smallest non-negative solution x in [0, M-1], where M is the product of all moduli.
-    Response: { "x": number, "modulus": number }
+    Make sure the body actually has at least two pieces, each shaped with "a" and "m".
+    Check that all the moduli are pairwise coprime; if any share a factor bigger than 1, return 400.
+    Find the smallest x that isn’t negative, staying between 0 and M−1, and M is the product of all the moduli.
+    Answer: { "x": number, "modulus": number }
 
-  Notes (not enforced by tests):
-  It’s usually safer to keep m > 1 when using modinv.
-  You can check integers strictly or validate them directly in the handlers.
-  Many people compute φ with factorization, use the Extended Euclidean Algorithm for the modular inverse, and rely on these inverses to solve CRT.
+  Keep in mind – nothing here is tested directly
+  It usually helps when m stays above 1 for modinv.
+  You can check integers strictly or just confirm them inside the handler.
+  People often get φ by factoring the number, use the Extended Euclidean Algorithm for the modular inverse, and then put everything together for CRT.
   Edit only these files:
     - server/routes/advanced.js
     - server/services/calculator.js
