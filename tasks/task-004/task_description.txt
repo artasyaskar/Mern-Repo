@@ -27,7 +27,7 @@ task_description: |
      Look at the tiniest x - could be zero or a bit higher - that sits just under M. This round, find M by pulling together all moduli, then run them through direct multiplication.  
        {x: value, modulus: size}
 
-  Keep in mind - exams usually miss these  
+  Keep in mind, exams usually miss these  
   Picking m larger than 1 tends to play nice with modinv - skip this, however, things might swing quick. Overlook it, then numbers could drift from left field. Go for multiple if you wanna dodge sharp leaps. Hold it beyond 1 to avoid the chaos.  
   You could look at the numbers carefully - on the flip side, just greenlight them directly in the process.  
   Folks usually find φ by breaking down numbers, but they might also use the Extended Euclidean method to hunt for modular inverses - these flip-sides pop up now and then when solving CRT riddles.
