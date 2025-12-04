@@ -1,0 +1,196 @@
+diff --git a/server/middleware/validate.js b/server/middleware/validate.js
+index a1d95b8..b62049f 100644
+--- a/server/middleware/validate.js
++++ b/server/middleware/validate.js
+@@ -1 +1,32 @@
+-function requireNumbers(keys){return function(req,res,next){for(const k of keys){const v=Number(req.query[k]);if(Number.isNaN(v)){res.status(400).json({error:k});return;}}next();};}module.exports={requireNumbers};
++function requireNumbers(keys){
++  return function(req,res,next){
++    for(const k of keys){
++      const v = Number(req.query[k]);
++      if(Number.isNaN(v)){
++        res.status(400).json({error:k});
++        return;
++      }
++    }
++    next();
++  };
++}
++
++function isIntegerString(s){
++  return typeof s === 'string' && /^-?\d+$/.test(s.trim());
++}
++
++function parseIntegerList(s){
++  if (typeof s !== 'string') return null;
++  const parts = s.split(',');
++  if (parts.length === 0) return null;
++  const out = [];
++  for (let t of parts){
++    t = String(t).trim();
++    if (t === '') return null;
++    if (!/^-?\d+$/.test(t)) return null;
++    out.push(Number(t));
++  }
++  return out.length ? out : null;
++}
++
++module.exports = { requireNumbers, isIntegerString, parseIntegerList };
+diff --git a/server/routes/advanced.js b/server/routes/advanced.js
+index 0144b18..76419ab 100644
+--- a/server/routes/advanced.js
++++ b/server/routes/advanced.js
+@@ -1 +1,82 @@
+-const express=require('express');const {requireNumbers}=require('../middleware/validate');const {factorial,fibonacci,gcd,lcm,primesUpTo}=require('../services/calculator');const router=express.Router();router.get('/factorial',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:factorial(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/fibonacci',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:fibonacci(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/gcd',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:gcd(a,b)})});router.get('/lcm',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:lcm(a,b)})});router.get('/primes',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);res.json({result:primesUpTo(n)})});module.exports=router;
++const express = require('express');
++const { requireNumbers, isIntegerString, parseIntegerList } = require('../middleware/validate');
++const {
++  factorial,
++  fibonacci,
++  gcd,
++  lcm,
++  primesUpTo,
++  mean,
++  median,
++  mode,
++  percentileNearestRank,
++  convolveFull
++} = require('../services/calculator');
++
++const router = express.Router();
++router.get('/factorial', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  try { res.json({ result: factorial(n) }); }
++  catch (e) { res.status(400).json({ error: e.message }); }
++});
++
++router.get('/fibonacci', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  try { res.json({ result: fibonacci(n) }); }
++  catch (e) { res.status(400).json({ error: e.message }); }
++});
++
++router.get('/gcd', requireNumbers(['a','b']), (req, res) => {
++  const a = Number(req.query.a);
++  const b = Number(req.query.b);
++  res.json({ result: gcd(a,b) });
++});
++
++router.get('/lcm', requireNumbers(['a','b']), (req, res) => {
++  const a = Number(req.query.a);
++  const b = Number(req.query.b);
++  res.json({ result: lcm(a,b) });
++});
++
++router.get('/primes', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  res.json({ result: primesUpTo(n) });
++});
++
++router.get('/percentile', (req, res) => {
++  const nums = parseIntegerList(req.query.nums);
++  const pRaw = String(req.query.p ?? '');
++  if (!nums || !isIntegerString(pRaw)) return res.status(400).json({ error: 'invalid' });
++  const p = Number(pRaw);
++  if (p < 0 || p > 100) return res.status(400).json({ error: 'invalid' });
++  try {
++    const value = percentileNearestRank(nums, p);
++    res.json({ result: value });
++  } catch (e) {
++    res.status(400).json({ error: 'invalid' });
++  }
++});
++
++router.get('/convolve', (req, res) => {
++  const a = parseIntegerList(req.query.a);
++  const b = parseIntegerList(req.query.b);
++  if (!a || !b) return res.status(400).json({ error: 'invalid' });
++  try {
++    const c = convolveFull(a, b);
++    res.json({ result: c });
++  } catch (_e) {
++    res.status(400).json({ error: 'invalid' });
++  }
++});
++
++router.get('/mmm', (req, res) => {
++  const nums = parseIntegerList(req.query.nums);
++  if (!nums) return res.status(400).json({ error: 'invalid' });
++  try {
++    res.json({ mean: mean(nums), median: median(nums), mode: mode(nums) });
++  } catch (_e) {
++    res.status(400).json({ error: 'invalid' });
++  }
++});
++
++module.exports = router;
+diff --git a/server/services/calculator.js b/server/services/calculator.js
+index fb5ba03..fc73c47 100644
+--- a/server/services/calculator.js
++++ b/server/services/calculator.js
+@@ -1 +1,64 @@
+-function factorial(n){if(n<0)throw new Error('neg');let r=1;for(let i=2;i<=n;i++)r*=i;return r;}function fibonacci(n){if(n<0)throw new Error('neg');let a=0,b=1;for(let i=0;i<n;i++){[a,b]=[b,a+b];}return a;}function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}function lcm(a,b){if(a===0||b===0)return 0;return Math.abs(a*b)/gcd(a,b);}function prime(n){if(n<2)return false;for(let i=2;i*i<=n;i++){if(n%i===0)return false;}return true;}function primesUpTo(n){const out=[];for(let i=2;i<=n;i++){if(prime(i))out.push(i);}return out;}function mean(arr){return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0;}function variance(arr){if(arr.length<2)return 0;const m=mean(arr);return arr.reduce((s,x)=>s+(x-m)*(x-m),0)/(arr.length-1);}function stddev(arr){return Math.sqrt(variance(arr));}module.exports={factorial,fibonacci,gcd,lcm,prime,primesUpTo,mean,variance,stddev};
++function factorial(n){
++   if(n<0)throw new Error('neg');
++   let r=1;for(let i=2;i<=n;i++)r*=i;return r;
++ }
++ function fibonacci(n){
++   if(n<0)throw new Error('neg');
++   let a=0,b=1;for(let i=0;i<n;i++){[a,b]=[b,a+b];}return a;
++ }
++ function gcd(a,b){
++   a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;
++ }
++ function lcm(a,b){
++   if(a===0||b===0)return 0;return Math.abs(a*b)/gcd(a,b);
++ }
++ function prime(n){
++   if(n<2)return false;for(let i=2;i*i<=n;i++){if(n%i===0)return false;}return true;
++ }
++ function primesUpTo(n){
++   const out=[];for(let i=2;i<=n;i++){if(prime(i))out.push(i);}return out;
++ }
++ function mean(arr){
++   return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0;
++ }
++ function variance(arr){
++   if(arr.length<2)return 0;const m=mean(arr);return arr.reduce((s,x)=>s+(x-m)*(x-m),0)/(arr.length-1);
++ }
++ function stddev(arr){
++   return Math.sqrt(variance(arr));
++ }
++ function median(arr){
++   if(!arr.length) return 0;
++   const a = arr.slice().sort((x,y)=>x-y);
++   const m = Math.floor(a.length/2);
++   return a.length%2? a[m] : (a[m-1]+a[m])/2;
++ }
++ function mode(arr){
++   const m = new Map();
++   let best=null, cnt=0;
++   for(const x of arr){ const c=(m.get(x)||0)+1; m.set(x,c); if(c>cnt){cnt=c;best=x;} }
++   return best;
++ }
++ function percentileNearestRank(nums,p){
++   // nums: integer array (non-empty), p: integer in [0,100]
++   const a = nums.slice().sort((x,y)=>x-y);
++   const n = a.length;
++   let rank = Math.ceil((p/100)*n);
++   if(p===0) rank = 1; // explicit edge
++   if(rank<1) rank=1; if(rank>n) rank=n;
++   return a[rank-1];
++ }
++ function convolveFull(a,b){
++   const n=a.length, m=b.length;
++   const out = Array(n+m-1).fill(0);
++   for(let i=0;i<n;i++){
++     for(let j=0;j<m;j++){
++       out[i+j] += a[i]*b[j];
++     }
++   }
++   return out;
++ }
++ module.exports={
++   factorial,fibonacci,gcd,lcm,prime,primesUpTo,
++   mean,variance,stddev,median,mode,percentileNearestRank,convolveFull
++ };
