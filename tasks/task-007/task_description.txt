@@ -1,39 +1,39 @@
 task_description: |
-  Build strong paths for percentile tests, while adding smooth filters - don't skip simple sum stats. Link every function on its own line, plug each one neatly into what's already there.
+  Add three analytics endpoints with strict integer-list validation. Keep behavior precise and minimal, matching test coverage.
   Instructions:
-  Create new endpoints with strict validation plus clear error messages. Aim for clarity and precision rather than fast shortcuts. Keep performance steady on medium data loads - anywhere from a few hundred to many thousands of entries.
+  Create new endpoints with strict validation. Aim for clarity and correctness. Reasonable performance for medium lists (hundreds to a few thousands elements).
   Requirements (as tested):
   - GET /adv/percentile
   Query: nums, p
-  nums: a collection of full numbers separated using commas. Never blank. Zero spaces or periods.
-  - p: a number from 0 up to 100, includes every integer in that range.
+  - nums: comma-separated integers, no blanks or decimals (non-empty).
+  - p: integer percentile in [0, 100].
   Behavior:
-  - Grab the nearest spot from the sorted list: work it out by rounding up (p multiplied by n, then split by 100). The spots go from 1 to n. If p equals zero, just take the starting place.
-  Return the digit found there when you count up starting at one.
-  - Example: nums=1,2,3,4 then p=75 → rank=ceil(0.75×4)=3 → answer’s 3.
-  - Bad input → leads to HTTP 400.
+  - Nearest-rank on the sorted list: rank = ceil(p/100 * n), clamped to [1..n], and p=0 → rank=1.
+  - Return the value at that 1-based rank.
+  - Example: nums=1,2,3,4 and p=75 → rank=ceil(0.75*4)=3 → value=3.
+  - Invalid input → HTTP 400.
 
   - GET /adv/convolve
   Query: a, b
-  a but b: digits divided by commas - no gaps, no periods. Not blank.
+  - a, b: comma-separated integers, no blanks or decimals (non-empty).
   Behavior:
-  - Work out basic math step by step (full edition)
-  c[k] is just a[i] multiplied by b[k−i], then summed - this happens while k goes from 0 to the total size of a and b together, less two… but only if i actually lands inside both arrays without spilling out.
-  - So here’s how it goes: a=1,2,3 while b=4,5 ends up making c=[4,13,22,15].
-  - Invalid entry → HTTP 400.
+  - Full linear discrete convolution:
+    c[k] = sum_i a[i] * b[k-i] for valid i, k=0..len(a)+len(b)-2.
+  - Example: a=1,2,3 and b=4,5 → c=[4,13,22,15].
+  - Invalid input → HTTP 400.
 
   - GET /adv/mmm
   Query: nums
-  - nums: a collection of full numbers divided by commas (no gaps, no periods). It’s always got at least one value.
+  - nums: comma-separated integers, no blanks or decimals (non-empty).
   Behavior:
-  {"mean": m, "median": d, "mode": o}.
-  mean is the total split into parts, shown as a float. median sits right in the center when values line up from low to high.
-  mode is the value appearing most often. Tests rarely give identical outcomes.
-  - Got bad details → site shoots back 400.
+  - Respond with {"mean": m, "median": d, "mode": o}.
+    mean is arithmetic mean (float). median is the usual median.
+    mode is the most frequent value (tests avoid ties).
+  - Invalid input → HTTP 400.
 
   Validation helpers:
-  Stick to full numbers only - no blanks, no skips, nothing fuzzy. Toss out zeros that act like placeholders. Skip anything sneaking in that isn't a clean integer. No half-values, no weird symbols messing up the lineup.
-  - Try a repeat-use checker - like pick requireIntegerList - for some request spots.
+  - Enforce integer-only lists strictly. Reject empty lists, blanks, missing values, and non-integers.
+  - Prefer a reusable validator for parsing integer lists from query params.
 
   Things you may need to adjust:
   - server/middleware/validate.js
@@ -41,12 +41,12 @@ task_description: |
   - server/services/calculator.js
 
   Notes:
-  - Keep things basic if they get quick results – go with O(n log n) for percentiles since sorting handles it; when doing convolution, O(nm) runs smooth enough.
-  - Send back HTTP 400 for any mistake, toss in a quick line explaining why.
+  - Keep algorithms straightforward and efficient (O(n log n) for percentile due to sorting; convolution O(n*m)).
+  - Send back HTTP 400 on invalid input; tests do not require specific error message text.
 
   Anti-cheating guidance:
-  Keep replies flexible - inputs shift. Try new ways every run rather than stuck rules. Change your method slightly each go to stay on track.
-  - Stick to simple steps that actually do the job. Instead go around gimmicks like countdowns or preset replies.
+  - Do not hardcode results for specific inputs; tests will vary.
+  - Implement general, deterministic logic. Avoid time-based hacks or precomputed outputs.
 
 difficulty: hard
 category: Feature
