@@ -1,49 +1,49 @@
 task_description: |
-  Task: Advanced number theory endpoints with strict integer validation and performance targets.
+  Complex number tasks requiring precise integers along with strong performance targets.
   Instructions:
-  Implement new advanced endpoints with robust validation. Keep algorithms efficient and results normalized.
+  Install new top-tier access points with strong safeguards. Even though speed matters, balance the results well.
   Requirements (as tested):
   - GET /adv/powmod
-    - Params: a, b, m (integers). b >= 0, m > 1. Return JSON {"result": a^b mod m}.
-    - Must reject non-integers and invalid ranges with HTTP 400.
-    - Performance: handle large exponents (e.g., b around 10^7) quickly using exponentiation by squaring.
+  {"result": a^b % m} where a, b, m are integers, b ≥ 0, m > 1.
+  Reject wrong numbers or broken ranges with error 400 instead.
+  - Quick math: handles huge numbers - say, b close to 10 million - without slowing down, using a trick called squaring over and over.
 
   - GET /adv/modinv
-    - Params: a, m (integers, m > 1). Return JSON {"result": x} where (a*x) % m == 1 with 0 <= x < m.
-    - If inverse doesn't exist (gcd(a,m) != 1), return HTTP 400 with error.
+  {"result": x} where x is a number between 0 and m−1, such that when you multiply a by x and divide by m, the remainder is 1 - given that a and m are integers, and m greater than 1.
+  If there’s no inverse - meaning gcd(a,m) ≠ 1 - return HTTP 400 along with an error note.
 
   - GET /adv/crt
-    - Params: a1, m1, a2, m2 (integers, m1>1, m2>1). Return JSON {"x": x, "m": lcm(m1,m2)} where x solves x≡a1 (mod m1), x≡a2 (mod m2), 0 <= x < lcm.
-    - If no solution (inconsistent residues), return HTTP 400.
+  {"x": found_value, "m": lcm_result}.
+  If nothing fits since the remains clash, return HTTP 400.
 
   - GET /adv/primes_segment
-    - Params: L, R (integers, 2 <= L <= R). Optional format ("json"|"csv").
-    - format=json (default): {"result": [primes in [L,R]]}.
-    - format=csv: text/csv with header "prime" then one prime per line.
-    - Performance: R up to 100000 must complete under 1.5 seconds in json mode.
+  L, R are integers where 2 ≤ L ≤ R. Pick output format - json or csv - it’s your call.
+  {"result": [prime numbers from L up to R]}.
+  prime numbers like 2 then 3 also 5 next 7 besides 11 plus 13 along with 17 followed by 19 including 23 ending at 29.
+  - Pace: R must hit 100k quicker than 1.5 seconds if running with json config.
 
   - GET /adv/stats
-    - Param: nums (comma-separated integers). Reject empty or any non-integer -> HTTP 400.
-    - Return JSON {"mean": m, "variance": v, "stddev": s} with sample variance (n-1 in denominator). Values as numbers.
+  - Give numbers, split by commas. Not there or got weird stuff? Send back HTTP 400.
+  {"mean": m, "variance": v, "stddev": s} with variance calculated via n−1; return raw values.
 
   - GET /adv/gcd_array
-    - Param: nums (comma-separated integers). Reject empty or any non-integer -> HTTP 400.
-    - Return JSON {"result": gcd of all absolute values}.
+  - Give numbers, split by commas. If none given or wrong type → send back HTTP 400.
+  {result: biggest number that divides all positive versions}.
 
   Validation helpers:
-  - Use an integer-only validator (like requireIntegers) for endpoints that require integers.
-  - For list parameters, validate each token is an integer and no empties.
+  - Choose an integer-only validator - like requireIntegers - for fields that need full numbers instead of fractions or decimals.
+  - Go through each thing on the list – confirm it's actually a digit, not empty or words.
 
-  Example files that will likely require changes:
+  Example documents that might need to fix:
   - server/middleware/validate.js
   - server/routes/advanced.js
   - server/services/calculator.js
 
   Anti-cheating guidance:
-  - Do not hardcode responses for specific inputs. Tests include varied inputs and performance checks.
-  - Implement general algorithms: fast powmod, extended Euclid for modinv/CRT, segmented sieve for prime ranges, numeric stats.
+  Don't tie replies to specific numbers - tests run on random values or faster checks. Go loose, so shifts don’t crash the system. Every test could drop fresh input or tighter time needs. Rolling with change beats rigid outputs every time.
+  - Stick to simple tricks: fast power tweaks, extended Euclid for inverses or merging leftovers, broken-down sieve for ranges, tracking repeated shapes.
 
-difficulty: very_hard
+difficulty: hard
 category: Feature
-tags: [node, express, algorithms, number-theory]
+tags: [node, express, algorithms, number theory]
 parser_name: pytest
