@@ -1,38 +1,38 @@
 task_description: |
-  Task: Work involves whole numbers, checking primes within intervals, finding least common multiples across several values - include boundary points plus ensure accurate checks at every step
+  Task: Work handles whole numbers, checking primes across set spans - find the least common multiple across several digits, tossing in boundary cases; make every test accurate from start to finish
   Instructions:
-  Fix how integers are checked plus introduce fresh math features. Make sure code stays accurate but runs fast.
+  Fix whole number tests when tossing in fresh math tricks. Swap techniques every so often to keep things right but quick.
   Requirements (as tested):
   - GET /adv/gcd and GET /adv/lcm
-  - Add check for whole numbers only. If someone uses decimals - say a=8.5 - the system should send back error 400.
-  - Outcomes should stay positive (like gcd(-8,12)=4, lcm(-4,6)=12).
+  - See if the number’s a full integer. If there's a dot - say, a=7.3 - send back error 400 straight off. Keep things brief. Block anything with decimals from the start. Precision counts, so no float values at all. Catch any . character quick. Just toss it out immediately. No need to keep going - rules are tight. So halt right when you see a piece show up.
+  - Outcomes should stay positive (like gcd(-8,12) gives 4, whereas lcm(-4,6) turns into 12).
 
   - GET /adv/egcd
-  - Inputs: two whole numbers, a and b. Output gives the Bézout pair linked to them.
-  - Result JSON: {"gcd": G, "x": x, "y": y} where ax plus by equals G, also G is zero or more.
+  - Input: two whole numbers, a but also b. Output gives their Bézout link.
+  {"gcd": G, "x": x, "y": y} where ax equals G without by, yet G never drops below zero.
 
   - GET /adv/lcm_many
-  Give nums as numbers split by commas. If list is blank or has something that’s not a number → send back HTTP 400.
-  {"result": lcm of nums, giving non-negative output. if any number is zero, lcm becomes zero instead}.
+  Submit digits split by commas. When blank or has letters → send back HTTP 400.
+  LCD of numbers gives a number zero or bigger. If any number is zero, answer becomes zero instantly - no exceptions. It just skips ahead without delay.
 
   - GET /adv/primes_range
-  - Needs n as whole number, n at least 2. - Can include start, a number from 2 up to n. - Format might be set - either json or csv. - All are choices except n, which is required.
-  - If format=json (the usual choice), send back {"result": [list of primes from start or 2 up to n]}.
-  - If format=csv, send back text/csv with the header "prime", then list each prime on its own line.
-  - Speed: when n equals 30000 and output is set to json, should finish in less than 2 seconds.
+  - Needs n as a whole number, n should be 2 at least. - Can include start, picking any figure between 2 and n. - Pick how it comes out - either json or csv works. - All else is up to you, except n; that one's required.
+  - If you use format=json – which people usually do – send back {"result": [list of primes from start or 2 up to n]}.
+  - If format's set to csv, respond with text/csv then add the header "prime" – from there, list each prime number on its own line.
+  - Speed: when n reaches 30000 and output is in json, finishes in less than two seconds.
 
   Validation helpers:
-  - Put in a filter that only allows whole numbers - block anything with decimals or text-like digits by using something like requireIntegers.
-  - Use again for gcd, also lcm, plus fresh endpoints.
+  - Pick whole numbers only - use something like requireIntegers to block fractions or spelled-out words.
+  - Give gcd another shot, also test lcm - new links added.
 
-  Specific files needing changes (example locations listed):
+  Certain files needing changes – example areas listed here:
   - server/middleware/validate.js
   - server/routes/advanced.js
   - server/services/calculator.js
 
   Anti-cheating guidance:
-  - Skip fixed answers for particular entries. Tests use different inputs plus mixed cases to check overall logic works.
-  - Use basic methods like extended Euclid, making primes, handling CSV layout - also include solid checks.
+  - Bypass preset replies for individual elements. Since trials use different entries - along with shuffled formats - it checks whether the reasoning still works.
+  - Give basic methods a go - like using long division to find GCD, generating primes step by step, handling CSV layout - all while tossing in solid checks.
 
 difficulty: hard
 category: Feature
