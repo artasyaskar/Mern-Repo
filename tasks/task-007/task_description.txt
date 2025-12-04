@@ -1,54 +1,54 @@
 task_description: |
-  Add three analytics endpoints with strict integer-list validation. Keep behavior precise and minimal, matching test coverage.
+  Task: Add three analytics endpoints, use tight integerlist checks. Stick to clean actions, no extras; match tests exactly.
   Instructions:
-  Create new endpoints with strict validation. Aim for clarity and correctness. Reasonable performance for medium lists (hundreds to a few thousands elements).
+  Create fresh endpoints using tight checks. Focus on clear, accurate results. Decent speed when handling mid-sized lists - ranging from hundreds up to several thousand items.
   Requirements (as tested):
   - GET /adv/percentile
   Query: nums, p
-  - nums: comma-separated integers, no blanks or decimals (non-empty).
-  - p: integer percentile in [0, 100].
+  - nums: a list of whole numbers split by commas, nothing empty, no dots or spaces.
+  - p: whole number from 0 up to 100.
   Behavior:
-  - Nearest-rank on the sorted list: rank = ceil(p/100 * n), clamped to [1..n], and p=0 → rank=1.
-  - Return the value at that 1-based rank.
-  - Example: nums=1,2,3,4 and p=75 → rank=ceil(0.75*4)=3 → value=3.
-  - Invalid input → HTTP 400.
+  Look at the ordered list. Pick position using formula: round up (p times n divided by 100). Force it between 1 and n. If p is zero, pick first spot instead.
+  Get the number at that position, counting from one.
+  - Like this: nums=1,2,3,4 plus p=75 → rank=ceil(0.75×4)=3 → result is 3.
+  - Wrong input → error 400.
 
   - GET /adv/convolve
   Query: a, b
-  - a, b: comma-separated integers, no blanks or decimals (non-empty).
+  - a, b: numbers split by commas, no spaces or dots (must have values).
   Behavior:
-  - Full linear discrete convolution:
-    c[k] = sum_i a[i] * b[k-i] for valid i, k=0..len(a)+len(b)-2.
-  - Example: a=1,2,3 and b=4,5 → c=[4,13,22,15].
-  - Invalid input → HTTP 400.
+  - Complete step-by-step number crunching without overlaps:
+  c[k] equals total of a[i] times b[k−i], using okay values of i, where k runs from 0 up to len(a) plus len(b) minus two.
+  - Like this: a=1,2,3 but b=4,5 → c=[4,13,22,15].
+  - Wrong input → HTTP 400.
 
   - GET /adv/mmm
   Query: nums
-  - nums: comma-separated integers, no blanks or decimals (non-empty).
+  - nums: list of whole numbers separated by commas, no spaces or dots (must have at least one number).
   Behavior:
-  - Respond with {"mean": m, "median": d, "mode": o}.
-    mean is arithmetic mean (float). median is the usual median.
-    mode is the most frequent value (tests avoid ties).
-  - Invalid input → HTTP 400.
+  {"mean": m, "median": d, "mode": o}.
+  mean stands for average value, like you'd get from adding up then dividing. median? that’s the middle number when things are lined up in order.
+  mode means the number that shows up most often - tests are set up so there’s no tie.
+  - Wrong info sent → error code 400.
 
   Validation helpers:
-  - Enforce integer-only lists strictly. Reject empty lists, blanks, missing values, and non-integers.
-  - Prefer a reusable validator for parsing integer lists from query params.
+  - Only allow whole numbers in lists. Do not accept gaps, nulls, or anything that isn't an integer. No empty collections either.
+  - Go with a reusable checker to handle number lists from URL inputs instead.
 
-  Things you may need to adjust:
+  Stuff you might have to tweak:
   - server/middleware/validate.js
   - server/routes/advanced.js
   - server/services/calculator.js
 
   Notes:
-  - Keep algorithms straightforward and efficient (O(n log n) for percentile due to sorting; convolution O(n*m)).
-  - Send back HTTP 400 on invalid input; tests do not require specific error message text.
+  - Use simple methods that work fast - sorting takes O(n log n) for percentiles; convolutions run in O(nm).
+  Send back HTTP 400 if input’s wrong - tests won’t care about exact wording. But make sure status code is right no matter what.
 
   Anti-cheating guidance:
-  - Do not hardcode results for specific inputs; tests will vary.
-  - Implement general, deterministic logic. Avoid time-based hacks or precomputed outputs.
+  - Make sure your code works for any input - not just one example; test cases change.
+  - Use basic, predictable rules. Skip clock tricks or fixed answers.
 
 difficulty: hard
 category: Feature
-tags: [node, express, algorithms]
+tags: node plus express - also algorithms
 parser_name: pytest
