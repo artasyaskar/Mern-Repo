@@ -154,7 +154,7 @@ index fb5ba03..567269e 100644
 + function mean(arr){ return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0; }
 + function variance(arr){ if(arr.length<2) return 0; const m=mean(arr); return arr.reduce((s,x)=>s+(x-m)*(x-m),0)/(arr.length-1); }
 + function stddev(arr){ return Math.sqrt(variance(arr)); }
-+ 
++
 + // Euler's totient using factorization: O(sqrt(n))
 + function phi(n){
 +   if(!Number.isInteger(n) || n<1) throw new Error('invalid n');
@@ -171,7 +171,7 @@ index fb5ba03..567269e 100644
 +   }
 +   return result;
 + }
-+ 
++
 + function egcd(a,b){
 +   let x0=1, y0=0, x1=0, y1=1;
 +   while(b!==0){
@@ -182,11 +182,11 @@ index fb5ba03..567269e 100644
 +   }
 +   return { g: Math.abs(a), x: x0, y: y0 };
 + }
-+ 
++
 + function modNormalize(a,m){
 +   return ((a % m) + m) % m;
 + }
-+ 
++
 + function modInverse(a,m){
 +   if(!Number.isInteger(a) || !Number.isInteger(m) || m<=1) throw new Error('invalid');
 +   a = modNormalize(a, m);
@@ -194,7 +194,7 @@ index fb5ba03..567269e 100644
 +   if(g !== 1) throw new Error('not coprime');
 +   return modNormalize(x, m);
 + }
-+ 
++
 + // Chinese Remainder Theorem for pairwise coprime moduli
 + function crtSolve(congruences){
 +   if(!Array.isArray(congruences) || congruences.length < 2) throw new Error('invalid');
@@ -220,7 +220,7 @@ index fb5ba03..567269e 100644
 +   if(x < 0n) x += Mb;
 +   return { x: Number(x), modulus: M };
 + }
-+ 
++
 + module.exports={
 +   factorial,fibonacci,gcd,lcm,prime,primesUpTo,mean,variance,stddev,
 +   phi, modInverse, crtSolve
