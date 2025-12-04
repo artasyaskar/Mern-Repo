@@ -51,11 +51,18 @@ task_description: |
   - Send back HTTP 400 whenever data's off; checks confirm the code through when rather than directly.
   Looks at key moves linked to those points - doesn’t hit every detail. This plan lines up tight with what the tests verify, no extra fluff.
 
-  Anti-cheating guidance:
-  - Ignore fixed values – outputs change during checks.
-  Keep things clear - skip shortcuts or fast tricks while you go. Instead, focus on basic logic without rushing ahead.
+  Anti-cheating measures:
+  - Inputs are dynamically generated with randomized values in each test run
+  - Prime factors will test numbers up to 10^7 with varying prime combinations
+  - Rolling median tests use random array lengths (10-1000) with random k values
+  - Unique mode tests include randomized arrays with varying distributions
+  - Edge cases are randomly interleaved with normal test cases
+  - All solutions must process arbitrary valid inputs within constraints
+  - Any attempt to hardcode responses will be detected and penalized
+  - Focus on general algorithms rather than specific test cases
 
 difficulty: hard
 category: Feature
-tags: [node, express, algorithms]
+tags: [node, express, algorithms, randomized]
 parser_name: pytest
+
