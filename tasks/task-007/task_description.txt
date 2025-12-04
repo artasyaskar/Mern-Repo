@@ -1,0 +1,54 @@
+task_description: |
+  Task: Add robust analytics endpoints for percentiles, convolution, and summary stats.
+  Instructions:
+  Implement new advanced endpoints with strict validation and clear error handling. Favor clarity and correctness over shortcuts. Keep runtime efficient for medium lists (hundreds to a few thousands elements).
+  Requirements (as tested):
+  - GET /adv/percentile
+    Query: nums, p
+    - nums: comma-separated integers (no blanks, no decimals). Non-empty.
+    - p: integer percentile from 0 to 100 inclusive.
+    Behavior:
+    - Use the nearest-rank method on the sorted list: rank = ceil(p/100 * n), with rank in [1..n] and p=0 → rank=1.
+      Return the value at that 1-based rank.
+    - Example: nums=1,2,3,4 and p=75 → rank=ceil(0.75*4)=3 → value=3.
+    - Invalid input → HTTP 400.
+
+  - GET /adv/convolve
+    Query: a, b
+    - a, b: comma-separated integers (no blanks, no decimals). Non-empty.
+    Behavior:
+    - Compute linear discrete convolution (full):
+      c[k] = sum_i a[i] * b[k-i], for k from 0 to len(a)+len(b)-2 using valid indices.
+    - Example: a=1,2,3 and b=4,5 → c=[4,13,22,15].
+    - Invalid input → HTTP 400.
+
+  - GET /adv/mmm
+    Query: nums
+    - nums: comma-separated integers (no blanks, no decimals). Non-empty.
+    Behavior:
+    - Respond with {"mean": m, "median": d, "mode": o}.
+      mean is arithmetic mean as float. median is standard median.
+      mode is the most frequent value. Tests will avoid ties.
+    - Invalid input → HTTP 400.
+
+  Validation helpers:
+  - Enforce integers-only lists strictly. Reject empty lists, blanks, missing values, and non-integers.
+  - Prefer a reusable validator, e.g. something like requireIntegerList for specific query keys.
+
+  Files you may need to modify:
+  - server/middleware/validate.js
+  - server/routes/advanced.js
+  - server/services/calculator.js
+
+  Notes:
+  - Keep algorithms straightforward and efficient (O(n log n) for percentile due to sorting is fine; convolution O(n*m)).
+  - Ensure all error responses use HTTP 400 with a brief message.
+
+  Anti-cheating guidance:
+  - Do not hardcode results for specific inputs; tests will vary.
+  - Implement general, deterministic logic. Avoid time-based hacks or precomputed outputs.
+
+difficulty: hard
+category: Feature
+tags: [node, express, algorithms]
+parser_name: pytest
