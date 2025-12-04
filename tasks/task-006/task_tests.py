@@ -21,8 +21,13 @@ def test_powmod_validation_and_large_exponent():
     r2 = requests.get(f"{BASE}/adv/powmod", params={"a": 123456789, "b": 10000000, "m": 100000007}, timeout=10)
     elapsed = time.time() - start
     assert r2.status_code == 200
-    # No exact value assertion; rely on server implementing fast pow. Ensure under time budget
+    # Numeric correctness and performance
+    assert r2.json()["result"] == pow(123456789, 10000000, 100000007)
     assert elapsed < 1.0
+
+    # Additional correctness check with smaller numbers
+    r3 = requests.get(f"{BASE}/adv/powmod", params={"a": 5, "b": 117, "m": 19}, timeout=5)
+    assert r3.status_code == 200 and r3.json()["result"] == pow(5, 117, 19)
 
 
 def test_modinv_exists_and_not_exists():

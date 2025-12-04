@@ -1,47 +1,47 @@
 task_description: |
-  Complex number tasks requiring precise integers along with strong performance targets.
+  Task: Fancy number tasks that want perfect counts yet reach hard targets too.
   Instructions:
-  Install new top-tier access points with strong safeguards. Even though speed matters, balance the results well.
+  Install new top-tier routers with strong security. Although fast links matter, balance setup steps carefully.
   Requirements (as tested):
   - GET /adv/powmod
-  {"result": a^b % m} where a, b, m are integers, b ≥ 0, m > 1.
-  Reject wrong numbers or broken ranges with error 400 instead.
-  - Quick math: handles huge numbers - say, b close to 10 million - without slowing down, using a trick called squaring over and over.
+  a to the power of b, split by m - grab what's left over; a, b, m are integers, b isn't negative, m goes past 1.
+  Reject bad numbers or broken ranges - send back a 400 error instead.
+  Quick math handling: runs well with huge numbers - say, close to 10 million - by using repeated squaring tricks.
 
   - GET /adv/modinv
-  {"result": x} where x is a number between 0 and m−1, such that when you multiply a by x and divide by m, the remainder is 1 - given that a and m are integers, and m greater than 1.
-  If there’s no inverse - meaning gcd(a,m) ≠ 1 - return HTTP 400 along with an error note.
+  {'result': x}, where x is some number between 0 and m−1; suppose you grab a, multiply it by x, divide the total by m - what’s leftover equals precisely 1; that happens only if a and m are integers, also m must be bigger than 1.
+  If there’s no inverse - meaning gcd(a,m) ≠ 1 - return HTTP 400 along with a straightforward error message.
 
   - GET /adv/crt
   {"x": found_value, "m": lcm_result}.
-  If nothing fits since the remains clash, return HTTP 400.
+  If stuff fails since parts don’t fit, return HTTP 400 instead.
 
   - GET /adv/primes_segment
-  L, R are integers where 2 ≤ L ≤ R. Pick output format - json or csv - it’s your call.
+  L and R are full numbers where 2 ≤ L, also L isn't larger than R. Pick your format - json or csv - it’s your call.
   {"result": [prime numbers from L up to R]}.
-  prime numbers like 2 then 3 also 5 next 7 besides 11 plus 13 along with 17 followed by 19 including 23 ending at 29.
-  - Pace: R must hit 100k quicker than 1.5 seconds if running with json config.
+  prime numbers like 2, next comes 3, followed by 5, right behind 7, also 11, similar to 13, along with 17, shortly 19, beyond 23, ending at 29.
+  - Quickness: R must hit 100k in less than a half-second if running with json config.
 
   - GET /adv/stats
-  - Give numbers, split by commas. Not there or got weird stuff? Send back HTTP 400.
-  {"mean": m, "variance": v, "stddev": s} with variance calculated via n−1; return raw values.
+  Send numbers with commas between them. If anything’s missing or looks strange? Send back error 400.
+  {"mean": m, "variance": v, "stddev": s} with variance calculated via n−1; return raw values instead.
 
   - GET /adv/gcd_array
-  - Give numbers, split by commas. If none given or wrong type → send back HTTP 400.
-  {result: biggest number that divides all positive versions}.
+  Send numbers with commas between them. Otherwise, if they’re wrong or absent → send back HTTP 400.
+  {outcome: biggest value fitting all positive forms}.
 
   Validation helpers:
-  - Choose an integer-only validator - like requireIntegers - for fields that need full numbers instead of fractions or decimals.
-  - Go through each thing on the list – confirm it's actually a digit, not empty or words.
+  Try an integer validator - like requireIntegers - if you need full numbers, never fractions or decimals. Use a rigid rule when pieces don’t belong here. Instead, go strict.
+  - Go through each thing separately – see if it's a digit, not empty or text.
 
-  Example documents that might need to fix:
+  Example documents you might need to fix:
   - server/middleware/validate.js
   - server/routes/advanced.js
   - server/services/calculator.js
 
   Anti-cheating guidance:
-  Don't tie replies to specific numbers - tests run on random values or faster checks. Go loose, so shifts don’t crash the system. Every test could drop fresh input or tighter time needs. Rolling with change beats rigid outputs every time.
-  - Stick to simple tricks: fast power tweaks, extended Euclid for inverses or merging leftovers, broken-down sieve for ranges, tracking repeated shapes.
+  Don’t tie responses to specific numbers - tests often come with random values or faster timelines. Keep it loose, so changes don’t cause failures. Every cycle could drop fresh info or tighter schedules. Rolling with shifts beats sticking rigid, whatever happens.
+  - Stick to simple tricks: fast shortcuts, Euclid’s way for inverses or merging leftovers, break sieve by chunks, spot repeating cycles.
 
 difficulty: hard
 category: Feature
