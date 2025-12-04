@@ -1,38 +1,44 @@
 task_description: |
   Task: Number theory utilities - Euler's totient, modular inverse, and CRT
   Instructions:
-  Go easy, focus on each piece, or stuff could fall apart.
+  Implement the endpoints below with the exact request/response schemas and validation rules.
 
   Requirements (as tested):
 
-  1. GET /adv/phi
-     n means any whole number bigger than zero - think of it as stepping forward once, then again  
-     Behavior:  
-     If n’s less than or equal to zero, return 400. Or if it’s not an integer, give back 400.  
-     If not, give back Euler's totient function φ(n).  
-       { "outcome": 123 }
+  - GET /adv/phi
+    Query parameters:
+    - n: required, positive integer provided as a canonical integer string (regex: ^-?\d+$)
+      Examples rejected: "10.0", 3.5, null/undefined, 0, negative values.
+    Behavior:
+    - If n is not a canonical integer string or n <= 0, return HTTP 400.
+    - Otherwise return Euler's totient φ(n).
+    Response JSON:
+    - { "result": number }
 
-  2. GET /adv/modinv  
-     a is just a regular number, whereas m refers to a different one  
-     Behavior:  
-     If gcd(a, m) equals 1, give back the modular inverse of a modulo m; otherwise, make sure outputs stay from 0 up to m minus 1.  
-     If gcd(a, m) isn't 1, kick out 400. Otherwise, skip ahead.  
-       { "result": 123 }
+  - GET /adv/modinv
+    Query parameters:
+    - a: required integer
+    - m: required integer
+    Behavior:
+    - If gcd(a, m) == 1, return the modular inverse of a modulo m, normalized to [0, m-1].
+    - If gcd(a, m) != 1, return HTTP 400.
+    Response JSON:
+    - { "result": number }
 
-  3. POST /adv/crt  
-     { "body": { "parts": [ {"x": 5, "y": 3}, along with {"x": 7, "y": 2} ] } }  
-     Behavior:  
-     A tiny chunk sits beside a bigger chunk. While someone grabs a pen, somebody else tries a different way.  
-     Keep every number apart, no merging - if they bump, give back 200. If just two join but space is more than one, chuck out 400.  
-     Look at the tiniest x - could be zero or a bit higher - that sits just under M. This round, find M by pulling together all moduli, then run them through direct multiplication.  
-       {x: value, modulus: size}
+  - POST /adv/crt
+    Request body (JSON):
+    - { "congruences": [ { "a": int, "m": int }, ... ] }
+    Validation rules:
+    - Body must include an array "congruences" with at least two items.
+    - Each item must have integer fields a and m.
+    - All moduli m must be pairwise coprime; otherwise return HTTP 400.
+    Behavior:
+    - Solve x ≡ a_i (mod m_i) and return the smallest non-negative solution x in [0, M-1],
+      where M is the product of all moduli.
+    Response JSON:
+    - { "x": number, "modulus": number }
 
-  Keep in mind, exams usually miss these  
-  Picking m larger than 1 tends to play nice with modinv - skip this, however, things might swing quick. Overlook it, then numbers could drift from left field. Go for multiple if you wanna dodge sharp leaps. Hold it beyond 1 to avoid the chaos.  
-  You could look at the numbers carefully - on the flip side, just greenlight them directly in the process.  
-  Folks usually find φ by breaking down numbers, but they might also use the Extended Euclidean method to hunt for modular inverses - these flip-sides pop up now and then when solving CRT riddles.
-
-  Edit just these files:
+  Files to edit (only these):
   - server/routes/advanced.js
   - server/services/calculator.js
   - server/middleware/validate.js
