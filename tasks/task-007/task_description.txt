@@ -1,39 +1,39 @@
 task_description: |
-  Task: Add three analytics endpoints, use tight integerlist checks. Stick to clean actions, no extras; match tests exactly.
+  Task: Create three tracking links - use tight digit-check rules. Stick to basic steps, no extras; go by test examples exactly.
   Instructions:
-  Create fresh endpoints using tight checks. Focus on clear, accurate results. Decent speed when handling mid-sized lists - ranging from hundreds up to several thousand items.
+  Set up fresh endpoints using tight checks. Go for clear results - no assumptions here. Works on lists, whether dozens or thousands, runs at a solid speed.
   Requirements (as tested):
   - GET /adv/percentile
   Query: nums, p
-  - nums: a list of whole numbers split by commas, nothing empty, no dots or spaces.
-  - p: whole number from 0 up to 100.
+  - nums: a list of whole numbers split by commas, no spaces, no fractions or breaks.
+  p: any figure between zero and one hundred, never less, never more.
   Behavior:
-  Look at the ordered list. Pick position using formula: round up (p times n divided by 100). Force it between 1 and n. If p is zero, pick first spot instead.
-  Get the number at that position, counting from one.
-  - Like this: nums=1,2,3,4 plus p=75 → rank=ceil(0.75×4)=3 → result is 3.
-  - Wrong input → error 400.
+  Look at the numbered options. Pick a spot using this method: grab p, times it by n, split by 100, then push it up to next whole number - unless it’s already one. Still, don’t let it drop below 1 or jump past n. If p is zero, pick number one straight away.
+  Choose the number you land on as you count up from one.
+  - Here's the deal: take nums = 1,2,3,4; now if p = 75, you do rank = ceil(0.75 × 4), that comes out to 3 - so result is 3.
+  - Wrong info added → triggers error 400.
 
   - GET /adv/convolve
   Query: a, b
-  - a, b: numbers split by commas, no spaces or dots (must have values).
+  a b.
   Behavior:
-  - Complete step-by-step number crunching without overlaps:
-  c[k] equals total of a[i] times b[k−i], using okay values of i, where k runs from 0 up to len(a) plus len(b) minus two.
-  - Like this: a=1,2,3 but b=4,5 → c=[4,13,22,15].
-  - Wrong input → HTTP 400.
+  - Work on every math part separately – don't loop or skip ahead
+  c[k] comes from multiplying a[i] with b[k−i], adding those values where i fits, as k runs from 0 up to len(a) combined with len(b), minus one.
+  - Here's the deal: if a is 1,2,3 but b stands at 4,5 → c becomes [4,13,22,15].
+  - Wrong ask → HTTP 400.
 
   - GET /adv/mmm
   Query: nums
-  - nums: list of whole numbers separated by commas, no spaces or dots (must have at least one number).
+  - nums: a list of whole numbers separated by commas, no spaces or decimals (must have at least one digit).
   Behavior:
   {"mean": m, "median": d, "mode": o}.
-  mean stands for average value, like you'd get from adding up then dividing. median? that’s the middle number when things are lined up in order.
-  mode means the number that shows up most often - tests are set up so there’s no tie.
-  - Wrong info sent → error code 400.
+  mean is all stuff added up, then shared equally among each part. median? line up every number from low to high - take the middle one straight out.
+  The mode’s the number that shows up most - tests are made so there's no tie.
+  - Wrong info sent → so you see error 400.
 
   Validation helpers:
-  - Only allow whole numbers in lists. Do not accept gaps, nulls, or anything that isn't an integer. No empty collections either.
-  - Go with a reusable checker to handle number lists from URL inputs instead.
+  Use whole numbers - no spaces, no decimals, nothing missing. No empty lists either.
+  - Give reusable checkers a go - they handle URL number lists better.
 
   Stuff you might have to tweak:
   - server/middleware/validate.js
@@ -41,14 +41,14 @@ task_description: |
   - server/services/calculator.js
 
   Notes:
-  - Use simple methods that work fast - sorting takes O(n log n) for percentiles; convolutions run in O(nm).
-  Send back HTTP 400 if input’s wrong - tests won’t care about exact wording. But make sure status code is right no matter what.
+  - Use simple methods to finish fast - sorting takes O(n log n) time for percentiles; chats run in O(nm).
+  Shoot back a 400 if the input’s wrong - tests won’t care what words you use. But make sure the status stays right, whatever happens.
 
   Anti-cheating guidance:
-  - Make sure your code works for any input - not just one example; test cases change.
-  - Use basic, predictable rules. Skip clock tricks or fixed answers.
+  - Make sure your code works fine even when stuff changes - inputs aren't stuck on one example; tests swap them out.
+  Keep things basic. Skip tricks that depend on timing or fixed answers.
 
 difficulty: hard
 category: Feature
-tags: node plus express - also algorithms
+tags: [node, express, algorithms]
 parser_name: pytest
