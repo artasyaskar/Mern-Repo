@@ -1,0 +1,50 @@
+task_description: |
+  Task: Number theory utilities — Euler's totient, modular inverse, and CRT
+  Instructions:
+  Add robust number-theory endpoints with strict validation and mathematically correct algorithms.
+  Requirements (as tested):
+  - GET /adv/phi
+    Query: n (positive integer)
+    Behavior:
+    - Validate n is a positive integer (n >= 1). Return 400 if invalid.
+    - Compute Euler's totient φ(n): count of integers in [1..n] that are coprime with n.
+    - Must use a factorization-based method (product over distinct primes), not a slow loop.
+    Response: { "result": number }
+
+  - GET /adv/modinv
+    Query: a (integer), m (integer > 1)
+    Behavior:
+    - Validate both are integers; m > 1. Return 400 when invalid.
+    - Compute the modular multiplicative inverse of a modulo m using Extended Euclid.
+    - If gcd(a, m) !== 1, return 400 with an explanatory error.
+    - Normalize the inverse to the range [0, m-1].
+    Response: { "result": number }
+
+  - POST /adv/crt
+    Body (JSON): {
+      "congruences": [ {"a": int, "m": int > 1}, ... ]
+    }
+    Behavior:
+    - Validate body shape and that at least two congruences are provided.
+    - Validate each a, m are integers and all moduli are pairwise coprime; return 400 when invalid.
+    - Solve x ≡ a_i (mod m_i) using the Chinese Remainder Theorem.
+    - Return the smallest non-negative solution x in [0, M-1] and the combined modulus M = Π m_i.
+    Response: { "x": number, "modulus": number }
+
+  Validation notes:
+  - Introduce a stricter middleware helper for GET routes: requireIntegers([keys]) that rejects non-integer inputs with 400.
+  - Continue to use or extend existing middleware/validate.js and routes/advanced.js appropriately.
+
+  Performance/Correctness notes:
+  - φ(n) should run in O(√n) via trial division factorization and be stable for n up to at least 1e9.
+  - modinv must use extended GCD and handle negative a correctly by normalization.
+  - CRT must not rely on precomputed answers; implement the constructive proof with modular inverses.
+
+notes:
+  - Change only server/routes/advanced.js, server/services/calculator.js, and server/middleware/validate.js.
+  - Do not modify unrelated files.
+
+difficulty: hard
+category: Feature
+tags: [node, express, algorithms, number-theory]
+parser_name: pytest
