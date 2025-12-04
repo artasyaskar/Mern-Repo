@@ -1,38 +1,38 @@
 task_description: |
-  Task: Integer rigor, prime ranges, and multi-operand LCM — add endpoints and strict validation
+  Task: Work involves whole numbers, checking primes within intervals, finding least common multiples across several values - include boundary points plus ensure accurate checks at every step
   Instructions:
-  Strengthen integer validation and add new advanced math endpoints. Keep implementations numerically correct and efficient.
+  Fix how integers are checked plus introduce fresh math features. Make sure code stays accurate but runs fast.
   Requirements (as tested):
   - GET /adv/gcd and GET /adv/lcm
-    - Introduce integer-only validation. Decimal values like a=8.5 must return HTTP 400.
-    - Results must be non-negative (e.g., gcd(-8,12)=4, lcm(-4,6)=12).
+  - Add check for whole numbers only. If someone uses decimals - say a=8.5 - the system should send back error 400.
+  - Outcomes should stay positive (like gcd(-8,12)=4, lcm(-4,6)=12).
 
   - GET /adv/egcd
-    - Params: a, b (integers). Return Bezout coefficients.
-    - Response JSON: {"gcd": G, "x": x, "y": y} such that ax + by = G and G >= 0.
+  - Inputs: two whole numbers, a and b. Output gives the Bézout pair linked to them.
+  - Result JSON: {"gcd": G, "x": x, "y": y} where ax plus by equals G, also G is zero or more.
 
   - GET /adv/lcm_many
-    - Param: nums (comma-separated integers). Reject empty list or any non-integer -> HTTP 400.
-    - Return JSON {"result": lcm(nums)} with non-negative result. lcm with any zero returns 0.
+  Give nums as numbers split by commas. If list is blank or has something that’s not a number → send back HTTP 400.
+  {"result": lcm of nums, giving non-negative output. if any number is zero, lcm becomes zero instead}.
 
   - GET /adv/primes_range
-    - Params: n (int, n >= 2), optional start (int, 2 <= start <= n), optional format ("json" | "csv").
-    - When format=json (default), respond {"result": [primes in [start or 2, n]]}.
-    - When format=csv, respond text/csv with header line "prime" followed by one prime per line.
-    - Performance: with n=30000 and format=json, must complete under 2 seconds.
+  - Needs n as whole number, n at least 2. - Can include start, a number from 2 up to n. - Format might be set - either json or csv. - All are choices except n, which is required.
+  - If format=json (the usual choice), send back {"result": [list of primes from start or 2 up to n]}.
+  - If format=csv, send back text/csv with the header "prime", then list each prime on its own line.
+  - Speed: when n equals 30000 and output is set to json, should finish in less than 2 seconds.
 
   Validation helpers:
-  - Add an integer-only validator middleware (e.g., requireIntegers) to reject non-integer numeric inputs.
-  - Reuse across gcd, lcm and new endpoints.
+  - Put in a filter that only allows whole numbers - block anything with decimals or text-like digits by using something like requireIntegers.
+  - Use again for gcd, also lcm, plus fresh endpoints.
 
-  Concrete files to modify (reference implementation paths):
+  Specific files needing changes (example locations listed):
   - server/middleware/validate.js
   - server/routes/advanced.js
   - server/services/calculator.js
 
   Anti-cheating guidance:
-  - Do not hardcode responses for specific inputs. Tests include multiple varied inputs and randomized cases to ensure general solutions.
-  - Implement general algorithms (extended Euclid, prime generation, CSV formatting) and robust validation.
+  - Skip fixed answers for particular entries. Tests use different inputs plus mixed cases to check overall logic works.
+  - Use basic methods like extended Euclid, making primes, handling CSV layout - also include solid checks.
 
 difficulty: hard
 category: Feature
