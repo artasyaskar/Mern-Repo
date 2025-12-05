@@ -1,5 +1,5 @@
 task_description: |
-  Follow numbers within moving chunks of data
+  Task: Follow numbers within moving chunks of data
 
   Instructions:
     Add a fresh endpoint that calculates rolling totals from number lists using a set window size, including tight validation rules. Aim for accurate results along with straightforward logic; stick precisely to the samples shown underneath.
@@ -51,7 +51,7 @@ task_description: |
     - You could use server/middleware/verify.js if needed to run checks.
     - Stick to simple O(nk) approaches; though quicker options work too.
 
-difficulty: medium
+difficulty: hard
 category: Feature
 tags: [node, express, statistics]
 parser_name: pytest
