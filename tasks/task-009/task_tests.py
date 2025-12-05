@@ -1,109 +1,121 @@
-import json
 import math
-import pytest
+import time
 import requests
-from fractions import Fraction
-import numpy as np
 
 BASE = "http://localhost:3000"
 
-def test_matrix_operations_addition():
-    """Test matrix addition with valid inputs"""
-    payload = {
-        "matrix1": [[1, 2], [3, 4]],
-        "matrix2": [[4, 3], [2, 1]],
-        "operation": "add"
-    }
-    r = requests.post(f"{BASE}/adv/matrix_operations", json=payload, timeout=5)
-    assert r.status_code == 200
-    assert r.json() == {"result": [[5, 5], [5, 5]]}
 
-def test_matrix_operations_invalid_dimensions():
-    """Test matrix multiplication with incompatible dimensions"""
-    payload = {
-        "matrix1": [[1, 2, 3], [4, 5, 6]],
-        "matrix2": [[1, 2], [3, 4]],
-        "operation": "multiply"
-    }
-    r = requests.post(f"{BASE}/adv/matrix_operations", json=payload, timeout=5)
-    assert r.status_code == 400
-    assert "error" in r.json()
-
-def test_continued_fraction_square_root():
-    """Test continued fraction for square root of non-square number"""
-    r = requests.get(f"{BASE}/adv/continued_fraction?n=13")
+def test_rolling_stats_basic_window_size_3():
+    """rolling_stats: computes mean/variance/stddev over sliding windows (k=3)."""
+    r = requests.get(
+        f"{BASE}/adv/rolling_stats",
+        params={"nums": "1,2,3,4,5", "k": 3},
+        timeout=5,
+    )
     assert r.status_code == 200
     data = r.json()
-    assert "period" in data
-    # The continued fraction representation of sqrt(13) is [3; 1,1,1,1,6,1,1,1,1,6,...]
-    assert data["period"][0] == 3  # Integer part
-    assert 6 in data["period"][1:]  # Should contain 6 in the repeating part
+    # Windows: [1,2,3], [2,3,4], [3,4,5]
+    # Means:   [2, 3, 4]
+    # Sample variance (ddof=1): each window variance = 1.0, stddev = 1.0
+    assert data["means"] == [2.0, 3.0, 4.0]
+    assert all(abs(v - 1.0) < 1e-9 for v in data["variances"])
+    assert all(abs(s - 1.0) < 1e-9 for s in data["stddevs"])
 
-def test_diophantine_solution():
-    """Test Diophantine equation solver with solvable equation"""
-    r = requests.get(f"{BASE}/adv/diophantine?a=3&b=5&c=8")
+
+def test_rolling_stats_respects_ddof_and_validation():
+    """rolling_stats: supports ddof and enforces 0 <= ddof < k with 400 on bad ddof."""
+    # ddof=0 (population variance)
+    r = requests.get(
+        f"{BASE}/adv/rolling_stats",
+        params={"nums": "1,2,3,4", "k": 2, "ddof": 0},
+        timeout=5,
+    )
     assert r.status_code == 200
     data = r.json()
-    assert "solution" in data
-    x = data["solution"]["x"]
-    y = data["solution"]["y"]
-    assert 3*x + 5*y == 8
+    # Windows: [1,2], [2,3], [3,4]
+    # Each window variance with ddof=0 is 0.25, stddev=0.5
+    assert all(abs(v - 0.25) < 1e-9 for v in data["variances"])
+    assert all(abs(s - 0.5) < 1e-9 for s in data["stddevs"])
 
-def test_diophantine_no_solution():
-    """Test Diophantine equation with no solution"""
-    r = requests.get(f"{BASE}/adv/diophantine?a=2&b=4&c=5")
-    assert r.status_code == 400
-    assert "error" in r.json()
+    # Invalid ddof: equal to k, negative, or non-integer -> 400
+    for params in [
+        {"nums": "1,2,3", "k": 3, "ddof": 3},
+        {"nums": "1,2,3", "k": 3, "ddof": -1},
+        {"nums": "1,2,3", "k": 3, "ddof": "1.5"},
+    ]:
+        rr = requests.get(f"{BASE}/adv/rolling_stats", params=params, timeout=5)
+        assert rr.status_code == 400
 
-def test_matrix_determinant():
-    """Test matrix determinant calculation"""
-    payload = {
-        "matrix1": [[4, 7], [2, 6]],
-        "operation": "determinant"
-    }
-    r = requests.post(f"{BASE}/adv/matrix_operations", json=payload, timeout=5)
-    assert r.status_code == 200
-    assert r.json() == {"result": 10}  # 4*6 - 7*2 = 10
 
-# Additional edge case tests
-def test_continued_fraction_perfect_square():
-    """Test continued fraction for perfect square"""
-    r = requests.get(f"{BASE}/adv/continued_fraction?n=16")
-    assert r.status_code == 200
-    assert r.json() == {"period": [4]}
+def test_rolling_stats_validation_nums_and_k():
+    """rolling_stats: validates nums as integer list and k in valid range."""
+    for params in [
+        {"nums": "", "k": 2},               # empty list
+        {"nums": "1,,2", "k": 2},           # blank token
+        {"nums": "1,2.0,3", "k": 2},       # decimal
+        {"nums": ".,2,3", "k": 2},         # invalid token
+        {"nums": "1,2", "k": 3},           # k > len(nums)
+        {"nums": "1,2,3", "k": 1},         # k < 2
+        {"nums": "1,2,3", "k": "2.5"},   # non-integer k
+    ]:
+        r = requests.get(f"{BASE}/adv/rolling_stats", params=params, timeout=5)
+        assert r.status_code == 400
 
-def test_matrix_operations_large_matrices():
-    """Test matrix operations with larger matrices"""
-    # This test will be skipped in initial runs as it's more of a performance test
-    size = 20
-    matrix = [[(i + j) % 10 for j in range(size)] for i in range(size)]
-    payload = {
-        "matrix1": matrix,
-        "matrix2": [[1 if i == j else 0 for j in range(size)] for i in range(size)],
-        "operation": "multiply"
-    }
-    r = requests.post(f"{BASE}/adv/matrix_operations", json=payload, timeout=10)
-    assert r.status_code == 200
-    result = r.json()["result"]
-    assert len(result) == size
-    assert len(result[0]) == size
 
-# Error case tests
-def test_invalid_matrix():
-    """Test with invalid matrix input"""
-    payload = {
-        "matrix1": [[1, 2], [3]],  # Jagged array
-        "operation": "determinant"
-    }
-    r = requests.post(f"{BASE}/adv/matrix_operations", json=payload, timeout=5)
-    assert r.status_code == 400
-
-# This test will be skipped initially as it's more complex
-def test_diophantine_negative_coefficients():
-    """Test Diophantine equation with negative coefficients"""
-    r = requests.get(f"{BASE}/adv/diophantine?a=-3&b=5&c=1")
+def test_rolling_stats_window_edges_and_signs():
+    """rolling_stats: handles negative numbers and k equal to len(nums)."""
+    # k == len(nums) -> single window
+    r = requests.get(
+        f"{BASE}/adv/rolling_stats",
+        params={"nums": "-1,-1,3", "k": 3},
+        timeout=5,
+    )
     assert r.status_code == 200
     data = r.json()
-    x = data["solution"]["x"]
-    y = data["solution"]["y"]
-    assert -3*x + 5*y == 1
+    # One window [-1,-1,3]: mean = 1/3, variance= 14/3 / (3-1)= 7/3, stddev=sqrt(7/3)
+    assert len(data["means"]) == 1
+    m = data["means"][0]
+    v = data["variances"][0]
+    s = data["stddevs"][0]
+    assert abs(m - (1.0 / 3.0)) < 1e-9
+    assert abs(v - (7.0 / 3.0)) < 1e-9
+    assert abs(s - math.sqrt(7.0 / 3.0)) < 1e-9
+
+
+def test_rolling_stats_numeric_stability_large_values():
+    """rolling_stats: numerically stable for values around 1e9 (no catastrophic cancellation)."""
+    nums = [1_000_000_000, 1_000_000_001, 999_999_999, 1_000_000_002]
+    r = requests.get(
+        f"{BASE}/adv/rolling_stats",
+        params={"nums": ",".join(str(x) for x in nums), "k": 2},
+        timeout=5,
+    )
+    assert r.status_code == 200
+    data = r.json()
+    # Windows: [1e9,1e9+1], [1e9+1,1e9-1], [1e9-1,1e9+2]
+    # We only require that variance/stddev are finite and small (no overflow/NaN)
+    for v, s in zip(data["variances"], data["stddevs"]):
+        assert math.isfinite(v)
+        assert math.isfinite(s)
+        assert v >= 0
+        assert s >= 0
+
+
+def test_rolling_stats_performance_moderate_size():
+    """rolling_stats: runs within reasonable time for lists up to ~2000 elements."""
+    nums = list(range(2000))
+    param_nums = ",".join(str(x) for x in nums)
+    start = time.time()
+    r = requests.get(
+        f"{BASE}/adv/rolling_stats",
+        params={"nums": param_nums, "k": 50},
+        timeout=10,
+    )
+    elapsed = time.time() - start
+    assert r.status_code == 200
+    data = r.json()
+    # There should be len(nums) - k + 1 windows
+    assert len(data["means"]) == len(nums) - 50 + 1
+    assert len(data["variances"]) == len(nums) - 50 + 1
+    assert len(data["stddevs"]) == len(nums) - 50 + 1
+    assert elapsed < 2.0

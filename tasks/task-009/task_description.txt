@@ -1,65 +1,40 @@
 task_description: |
-  Task: Advanced Mathematical Operations with Validation
-  
+  Task: Sliding window statistics over integer streams
   Instructions:
-  Implement three advanced mathematical endpoints with strict input validation and specific output requirements.
-  Each endpoint must validate its inputs and return appropriate HTTP status codes.
-
+  Add a new endpoint that computes rolling statistics over a list of integers using a fixed-size sliding window, with strict validation rules. Focus on correctness and clear behavior; follow the examples below.
   Requirements (as tested):
+  - GET /adv/rolling_stats
+    Query: nums, k, ddof (optional)
+    - nums: comma-separated list of integers (no spaces, no decimals). At least k integers are required.
+    - k: window size, positive integer >= 2 and <= len(nums).
+    - ddof: optional integer, defaults to 1. Must satisfy 0 <= ddof < k.
 
-  1. POST /adv/matrix_operations
-  Body: {
-    "matrix1": [[Number]],  // 2D array of numbers
-    "matrix2": [[Number]],  // 2D array of numbers
-    "operation": "add" | "multiply" | "determinant"  // Operation to perform
-  }
-  
-  - Validates both matrices are valid (rectangular, all elements are numbers)
-  - For 'add' and 'multiply': matrices must have compatible dimensions
-  - For 'determinant': matrix must be square
-  - Returns the result matrix or single number for determinant
-  - Returns 400 for invalid inputs or incompatible operations
+    Behavior:
+    - Validate inputs. Return HTTP 400 when:
+      - nums is missing, empty, contains non-integer tokens, or has fewer than k elements.
+      - k is missing, not an integer, < 2, or > len(nums).
+      - ddof is provided but is not an integer or violates 0 <= ddof < k.
+    - Let the windows be all contiguous subarrays of length k from nums.
+      For each window, compute sample statistics using denominator (k - ddof):
+        - mean: arithmetic mean (float allowed)
+        - variance: sample variance
+        - stddev: square root of variance
+    - Response JSON:
+      {
+        "means":   [m_0, m_1, ...],
+        "variances": [v_0, v_1, ...],
+        "stddevs": [s_0, s_1, ...]
+      }
+      where each index corresponds to one sliding window in order.
 
-  2. GET /adv/continued_fraction
-  Query: 
-    n: positive integer (n ≥ 1)
-    terms: comma-separated list of integers (at least 1 term)
-  
-  - Computes the continued fraction representation of the square root of n
-  - Returns {"period": [a0, a1, a2, ...]} where a0 is the integer part and a1..an is the repeating block
-  - If terms is provided, returns the rational approximation using the specified number of terms
-  - Returns 400 for invalid inputs (n not a perfect square, negative, or non-integer)
+  Notes:
+  - Focus changes in:
+    - server/routes/advanced.js
+    - server/services/calculator.js
+    - server/middleware/validate.js (optional but allowed for shared validation helpers)
+  - Use straightforward algorithms (no hard-coding for specific test values). Complexity O(n * k) or better is fine for these constraints.
 
-  3. GET /adv/diophantine
-  Query:
-    a: integer coefficient of x
-    b: integer coefficient of y
-    c: integer constant
-  
-  - Solves the Diophantine equation: ax + by = c
-  - Returns {"solution": {"x": x0, "y": y0, "general_x": x0 + (b/d)*t, "general_y": y0 - (a/d)*t}}
-  - d is the greatest common divisor of a and b
-  - Returns 400 if no integer solution exists or invalid inputs
-
-  Implementation Notes:
-  - All endpoints must validate inputs and return appropriate HTTP status codes
-  - Matrix operations should handle large matrices efficiently (up to 100x100)
-  - Continued fraction should be efficient for n up to 10^6
-  - Diophantine solver should handle large coefficients (up to 10^9)
-  - Error responses should be in the format {"error": "description"}
-  - All numeric outputs should be in exact form (fractions rather than decimals where applicable)
-
-  Anti-cheating measures:
-  - Inputs are dynamically generated with randomized values in each test run
-  - Matrix operations test with random dimensions and values
-  - Continued fraction tests use random n values with known patterns
-  - Diophantine equations are generated with known solutions
-  - Edge cases are randomly interleaved with normal test cases
-  - All solutions must process arbitrary valid inputs within constraints
-  - Any attempt to hardcode responses will be detected and penalized
-  - Focus on general algorithms rather than specific test cases
-
-difficulty: hard
+difficulty: medium
 category: Feature
-tags: [node, express, algorithms, math, matrices, number-theory]
+tags: [node, express, statistics]
 parser_name: pytest
