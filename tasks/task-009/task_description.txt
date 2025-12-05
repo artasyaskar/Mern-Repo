@@ -1,38 +1,55 @@
 task_description: |
-  Task: Sliding window statistics over integer streams
-  Instructions:
-  Add a new endpoint that computes rolling statistics over a list of integers using a fixed-size sliding window, with strict validation rules. Focus on correctness and clear behavior; follow the examples below.
-  Requirements (as tested):
-  - GET /adv/rolling_stats
-    Query: nums, k, ddof (optional)
-    - nums: comma-separated list of integers (no spaces, no decimals). At least k integers are required.
-    - k: window size, positive integer >= 2 and <= len(nums).
-    - ddof: optional integer, defaults to 1. Must satisfy 0 <= ddof < k.
+task_description: |
+  Task: Track digits inside shifting segments of info
 
-    Behavior:
-    - Validate inputs. Return HTTP 400 when:
-      - nums is missing, empty, contains non-integer tokens, or has fewer than k elements.
-      - k is missing, not an integer, < 2, or > len(nums).
-      - ddof is provided but is not an integer or violates 0 <= ddof < k.
-    - Let the windows be all contiguous subarrays of length k from nums.
-      For each window, compute sample statistics using denominator (k - ddof):
-        - mean: arithmetic mean (float allowed)
-        - variance: sample variance
-        - stddev: square root of variance
-    - Response JSON:
+  Instructions:
+    Add a new endpoint that works out rolling numbers from integer lists using a fixed-size window, with strict checks built in. Focus on correct output plus clear steps; follow the examples below exactly.
+
+  Requirements (as tested):
+
+    - GET /adv/rolling_stats
+      Query parameters:
+        - nums: 
+            description: >
+              A list of full numbers separated by commas (no spaces, no decimals). 
+              Requires at least k entries. Works with commas alone. Nothing else permitted. 
+              Must include k values or more. Digits remain clear - no halves or empty spots. 
+              Sequence continues smoothly. Just numbers and commas are used.
+        - k: 
+            description: >
+              The window size, telling how many things to check at once. Must be 3 or more, up to the size of nums.
+        - ddof:
+            description: >
+              A value you can pick, most often 1. Must satisfy 0 <= ddof < k.
+
+  Validation checks:
+    - Return HTTP 400 if:
+      - nums appears but is blank, contains gaps, decimals, or invalid characters.
+      - k appears but is not a full number, is less than 3, or exceeds the total count of nums.
+      - ddof is not an integer or does not satisfy 0 <= ddof < k.
+
+  Computation rules:
+    - Treat every window as a group of k pieces lined up inside nums.
+    - For every window, calculate:
+      - average: sum of numbers divided by number of items
+      - spread: distance of numbers from the middle value
+      - stddev: square root of variance (using k - ddof)
+    - Response JSON structure:
       {
-        "means":   [m_0, m_1, ...],
-        "variances": [v_0, v_1, ...],
-        "stddevs": [s_0, s_1, ...]
+        "mean": [m0, m1, ...],
+        "variance": [v0, v1, ...],
+        "stddev": [s0, s1, ...]
       }
-      where each index corresponds to one sliding window in order.
+      Each number aligns with its moving frame.
+
+  Extra features:
+    - Handles large numbers (~1 billion) without breaking.
+    - Fast for lists under 2000 entries with k around 50 (≈2 seconds execution).
 
   Notes:
-  - Focus changes in:
-    - server/routes/advanced.js
-    - server/services/calculator.js
-    - server/middleware/validate.js (optional but allowed for shared validation helpers)
-  - Use straightforward algorithms (no hard-coding for specific test values). Complexity O(n * k) or better is fine for these constraints.
+    - Focus mainly on server/routes/advanced.js and server/services/calculator.js
+    - Optionally, server/middleware/verify.js can be used for checks.
+    - Use straightforward O(n*k) methods; faster solutions are fine.
 
 difficulty: medium
 category: Feature
