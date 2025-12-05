@@ -55,7 +55,7 @@ index 0144b18..4b40627 100644
 +router.post('/matrix_operations', (req, res) => {
 +    try {
 +        const { matrix1, matrix2, operation } = req.body;
-+        
++
 +        if (!matrix1 || !operation) {
 +            return res.status(400).json({ error: 'matrix1 and operation are required' });
 +        }
@@ -80,7 +80,7 @@ index 0144b18..4b40627 100644
 +                }
 +                result = matrixAdd(matrix1, matrix2);
 +                break;
-+                
++
 +            case 'multiply':
 +                if (!matrix2) {
 +                    return res.status(400).json({ error: 'matrix2 is required for multiplication' });
@@ -94,20 +94,20 @@ index 0144b18..4b40627 100644
 +                }
 +                result = matrixMultiply(matrix1, matrix2);
 +                break;
-+                
++
 +            case 'determinant':
 +                if (matrix1.length !== matrix1[0].length) {
 +                    return res.status(400).json({ error: 'Matrix must be square to calculate determinant' });
 +                }
 +                result = matrixDeterminant(matrix1);
 +                break;
-+                
++
 +            default:
 +                return res.status(400).json({ error: 'Unsupported operation. Use add, multiply, or determinant' });
 +        }
-+        
++
 +        res.json({ result });
-+        
++
 +    } catch (error) {
 +        res.status(400).json({ error: error.message });
 +    }
@@ -117,9 +117,9 @@ index 0144b18..4b40627 100644
 +function isValidMatrix(matrix) {
 +    if (!Array.isArray(matrix) || matrix.length === 0) return false;
 +    const rowLength = matrix[0].length;
-+    return matrix.every(row => 
-+        Array.isArray(row) && 
-+        row.length === rowLength && 
++    return matrix.every(row =>
++        Array.isArray(row) &&
++        row.length === rowLength &&
 +        row.every(Number.isFinite)
 +    );
 +}
@@ -166,35 +166,35 @@ index 0144b18..4b40627 100644
 +    try {
 +        const n = parseInt(req.query.n, 10);
 +        const terms = req.query.terms ? parseInt(req.query.terms, 10) : null;
-+        
++
 +        if (isNaN(n) || n < 1) {
 +            return res.status(400).json({ error: 'n must be a positive integer' });
 +        }
-+        
++
 +        const { a0, period } = continuedFractionSqrt(n);
-+        
++
 +        // For perfect squares
 +        if (period.length === 1 && period[0] === a0) {
 +            return res.json({ period: [a0] });
 +        }
-+        
++
 +        // If no terms specified, just return the period
 +        if (terms === null) {
 +            return res.json({ period: [a0, ...period] });
 +        }
-+        
++
 +        if (terms <= 0) {
 +            return res.status(400).json({ error: 'terms must be a positive integer' });
 +        }
-+        
++
 +        // Calculate the continued fraction approximation
 +        const { numerator, denominator } = computeConvergent(a0, period, terms);
-+        
++
 +        res.json({
 +            period: [a0, ...period],
 +            approximation: `${numerator}/${denominator}`
 +        });
-+        
++
 +    } catch (error) {
 +        res.status(400).json({ error: error.message });
 +    }
@@ -206,18 +206,18 @@ index 0144b18..4b40627 100644
 +        const a = parseInt(req.query.a, 10);
 +        const b = parseInt(req.query.b, 10);
 +        const c = parseInt(req.query.c, 10);
-+        
++
 +        if (isNaN(a) || isNaN(b) || isNaN(c)) {
 +            return res.status(400).json({ error: 'a, b, and c must be integers' });
 +        }
-+        
++
 +        const solution = solveDiophantine(a, b, c);
-+        
++
 +        // Convert the solution to a serializable format
 +        const d = gcd(a, b);
 +        const bDivD = b / d;
 +        const aDivD = a / d;
-+        
++
 +        const serializedSolution = {
 +            x: solution.x,
 +            y: solution.y,
@@ -230,9 +230,9 @@ index 0144b18..4b40627 100644
 +                valid: a * solution.x + b * solution.y === c
 +            }
 +        };
-+        
++
 +        res.json({ solution: serializedSolution });
-+        
++
 +    } catch (error) {
 +        if (error.message === 'No integer solutions exist' || error.message === 'No solution exists') {
 +            return res.status(400).json({ error: 'No integer solutions exist' });
@@ -311,25 +311,25 @@ index fb5ba03..8dd170d 100644
 +    if (n < 0 || !Number.isInteger(n)) {
 +        throw new Error('n must be a non-negative integer');
 +    }
-+    
++
 +    const a0 = Math.floor(Math.sqrt(n));
 +    if (a0 * a0 === n) {
 +        return { a0, period: [a0] };
 +    }
-+    
++
 +    let m = 0;
 +    let d = 1;
 +    let a = a0;
 +    const period = [];
 +    const seen = new Map();
-+    
++
 +    while (true) {
 +        m = d * a - m;
 +        d = Math.floor((n - m * m) / d);
 +        a = Math.floor((a0 + m) / d);
-+        
++
 +        period.push(a);
-+        
++
 +        // Check if we've seen this state before
 +        const key = `${m},${d},${a}`;
 +        if (seen.has(key)) {
@@ -339,7 +339,7 @@ index fb5ba03..8dd170d 100644
 +        }
 +        seen.set(key, true);
 +    }
-+    
++
 +    return { a0, period };
 +}
 +
@@ -348,7 +348,7 @@ index fb5ba03..8dd170d 100644
 +    if (!Number.isInteger(a) || !Number.isInteger(b) || !Number.isInteger(c)) {
 +        throw new Error('Coefficients must be integers');
 +    }
-+    
++
 +    // Handle the case when both a and b are zero
 +    if (a === 0 && b === 0) {
 +        if (c === 0) {
@@ -357,31 +357,31 @@ index fb5ba03..8dd170d 100644
 +            throw new Error('No solution exists');
 +        }
 +    }
-+    
++
 +    function extendedGcd(a, b) {
 +        if (b === 0) {
 +            return { gcd: a, x: 1, y: 0 };
 +        }
 +        const { gcd, x: x1, y: y1 } = extendedGcd(b, a % b);
-+        return { 
-+            gcd, 
-+            x: y1, 
-+            y: x1 - Math.floor(a / b) * y1 
++        return {
++            gcd,
++            x: y1,
++            y: x1 - Math.floor(a / b) * y1
 +        };
 +    }
-+    
++
 +    const absA = Math.abs(a);
 +    const absB = Math.abs(b);
 +    const { gcd: d, x, y } = extendedGcd(absA, absB);
-+    
++
 +    if (c % d !== 0) {
 +        throw new Error('No integer solutions exist');
 +    }
-+    
++
 +    const k = c / d;
 +    const x0 = x * k * (a < 0 ? -1 : 1);
 +    const y0 = y * k * (b < 0 ? -1 : 1);
-+    
++
 +    return {
 +        x: x0,
 +        y: y0
