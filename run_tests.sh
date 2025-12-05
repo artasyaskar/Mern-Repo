@@ -175,7 +175,7 @@ PY
 
   # Run pytest for the task (use python3 -m to avoid missing entrypoint issues)
   if python3 -c "import pytest" 2>/dev/null; then
-    python3 -m pytest -q "$PY_TEST_FILE"
+    python3 -m pytest -rA "$PY_TEST_FILE"
   else
     echo "pytest is not available. To run tasks deterministically, please use: docker compose run --rm app ./run_tests.sh ${TASK_ID}" 1>&2
     exit 127
