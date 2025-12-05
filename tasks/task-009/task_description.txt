@@ -1,55 +1,55 @@
 task_description: |
-task_description: |
-  Task: Track digits inside shifting segments of info
+  Follow numbers within moving chunks of data
 
   Instructions:
-    Add a new endpoint that works out rolling numbers from integer lists using a fixed-size window, with strict checks built in. Focus on correct output plus clear steps; follow the examples below exactly.
+    Add a fresh endpoint that calculates rolling totals from number lists using a set window size, including tight validation rules. Aim for accurate results along with straightforward logic; stick precisely to the samples shown underneath.
 
   Requirements (as tested):
 
     - GET /adv/rolling_stats
       Query parameters:
-        - nums: 
+        - nums:
             description: >
-              A list of full numbers separated by commas (no spaces, no decimals). 
-              Requires at least k entries. Works with commas alone. Nothing else permitted. 
-              Must include k values or more. Digits remain clear - no halves or empty spots. 
-              Sequence continues smoothly. Just numbers and commas are used.
-        - k: 
+              A sequence of whole digits split by commas - no gaps, no points.
+              Needs a minimum of k items. Uses only commas to separate them. No other symbols allowed.
+              Might need k values - or even extra. Numbers stay sharp: nothing split or missing.
+              Numbers follow one after another. No gaps, just commas between them.
+        - k:
             description: >
-              The window size, telling how many things to check at once. Must be 3 or more, up to the size of nums.
+              The window size shows how many items to look at together - needs at least two,
+              but no more than what's in nums.
         - ddof:
             description: >
-              A value you can pick, most often 1. Must satisfy 0 <= ddof < k.
+              A number you choose, usually 1. Needs to meet 0 <= ddof < k.
 
   Validation checks:
     - Return HTTP 400 if:
-      - nums appears but is blank, contains gaps, decimals, or invalid characters.
-      - k appears but is not a full number, is less than 3, or exceeds the total count of nums.
-      - ddof is not an integer or does not satisfy 0 <= ddof < k.
+      - nums shows up yet stays empty, has spaces, fractions, or wrong symbols.
+      - k shows up yet isn't complete, falls below 2, or goes beyond how many nums there are.
+      - ddof isn't a whole number, or it falls outside the range 0 <= ddof < k.
 
   Computation rules:
-    - Treat every window as a group of k pieces lined up inside nums.
-    - For every window, calculate:
-      - average: sum of numbers divided by number of items
-      - spread: distance of numbers from the middle value
-      - stddev: square root of variance (using k - ddof)
+    - See each window like a set of k items arranged within nums.
+    - For each window, calculate:
+      - average: basic math average, decimals okay
+      - sample variance with denominator (k minus ddof)
+      - stddev: square root of variance
     - Response JSON structure:
       {
         "mean": [m0, m1, ...],
         "variance": [v0, v1, ...],
         "stddev": [s0, s1, ...]
       }
-      Each number aligns with its moving frame.
+      Every spot in those lists matches a single moving frame, lined up step by step.
 
   Extra features:
-    - Handles large numbers (~1 billion) without breaking.
-    - Fast for lists under 2000 entries with k around 50 (≈2 seconds execution).
+    - Deals with huge amounts - like around a billion - without crashing.
+    - Quick on lists below 2000 items when k is near 50 (about 2 sec run time).
 
   Notes:
-    - Focus mainly on server/routes/advanced.js and server/services/calculator.js
-    - Optionally, server/middleware/verify.js can be used for checks.
-    - Use straightforward O(n*k) methods; faster solutions are fine.
+    - Mainly look at server/routes/advanced.js but also check server/services/calculator.js
+    - You could use server/middleware/verify.js if needed to run checks.
+    - Stick to simple O(nk) approaches; though quicker options work too.
 
 difficulty: medium
 category: Feature
