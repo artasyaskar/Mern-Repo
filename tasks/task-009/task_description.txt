@@ -36,9 +36,9 @@ task_description: |
       - stddev: square root of variance
     - Response JSON structure:
       {
-        "mean": [m0, m1, ...],
-        "variance": [v0, v1, ...],
-        "stddev": [s0, s1, ...]
+        "means": [m0, m1, ...],
+        "variances": [v0, v1, ...],
+        "stddevs": [s0, s1, ...]
       }
       Every spot in those lists matches a single moving frame, lined up step by step.
 
