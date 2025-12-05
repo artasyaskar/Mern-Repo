@@ -1,0 +1,394 @@
+diff --git a/server/routes/advanced.js b/server/routes/advanced.js
+index 0144b18..4b40627 100644
+--- a/server/routes/advanced.js
++++ b/server/routes/advanced.js
+@@ -1 +1,238 @@
+-const express=require('express');const {requireNumbers}=require('../middleware/validate');const {factorial,fibonacci,gcd,lcm,primesUpTo}=require('../services/calculator');const router=express.Router();router.get('/factorial',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:factorial(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/fibonacci',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:fibonacci(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/gcd',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:gcd(a,b)})});router.get('/lcm',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:lcm(a,b)})});router.get('/primes',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);res.json({result:primesUpTo(n)})});module.exports=router;
++const express = require('express');
++const { requireNumbers } = require('../middleware/validate');
++const {
++    factorial, fibonacci, gcd, lcm, prime, primesUpTo,
++    mean, variance, stddev,
++    matrixAdd, matrixMultiply, matrixDeterminant,
++    continuedFractionSqrt, solveDiophantine
++} = require('../services/calculator');
++
++const router = express.Router();
++
++// Existing routes
++router.get('/factorial', requireNumbers(['n']), (req, res) => {
++    const n = Number(req.query.n);
++    try {
++        res.json({ result: factorial(n) });
++    } catch (e) {
++        res.status(400).json({ error: e.message });
++    }
++});
++
++router.get('/fibonacci', requireNumbers(['n']), (req, res) => {
++    const n = Number(req.query.n);
++    try {
++        res.json({ result: fibonacci(n) });
++    } catch (e) {
++        res.status(400).json({ error: e.message });
++    }
++});
++
++router.get('/gcd', requireNumbers(['a', 'b']), (req, res) => {
++    const a = Number(req.query.a);
++    const b = Number(req.query.b);
++    res.json({ result: gcd(a, b) });
++});
++
++router.get('/lcm', requireNumbers(['a', 'b']), (req, res) => {
++    const a = Number(req.query.a);
++    const b = Number(req.query.b);
++    res.json({ result: lcm(a, b) });
++});
++
++router.get('/primes', requireNumbers(['n']), (req, res) => {
++    const n = Number(req.query.n);
++    res.json({ result: primesUpTo(n) });
++});
++
++// Task-009: Matrix Operations
++router.post('/matrix_operations', (req, res) => {
++    try {
++        const { matrix1, matrix2, operation } = req.body;
++        
++        if (!matrix1 || !operation) {
++            return res.status(400).json({ error: 'matrix1 and operation are required' });
++        }
++
++        // Validate matrix1
++        if (!isValidMatrix(matrix1)) {
++            return res.status(400).json({ error: 'matrix1 must be a valid 2D array of numbers' });
++        }
++
++        let result;
++        switch (operation.toLowerCase()) {
++            case 'add':
++                if (!matrix2) {
++                    return res.status(400).json({ error: 'matrix2 is required for addition' });
++                }
++                if (!isValidMatrix(matrix2)) {
++                    return res.status(400).json({ error: 'matrix2 must be a valid 2D array of numbers' });
++                }
++                // Check dimensions for addition
++                if (matrix1.length !== matrix2.length || matrix1[0].length !== matrix2[0].length) {
++                    return res.status(400).json({ error: 'Matrices must have the same dimensions for addition' });
++                }
++                result = matrixAdd(matrix1, matrix2);
++                break;
++                
++            case 'multiply':
++                if (!matrix2) {
++                    return res.status(400).json({ error: 'matrix2 is required for multiplication' });
++                }
++                if (!isValidMatrix(matrix2)) {
++                    return res.status(400).json({ error: 'matrix2 must be a valid 2D array of numbers' });
++                }
++                // Check dimensions for multiplication
++                if (matrix1[0].length !== matrix2.length) {
++                    return res.status(400).json({ error: 'Number of columns in matrix1 must match number of rows in matrix2' });
++                }
++                result = matrixMultiply(matrix1, matrix2);
++                break;
++                
++            case 'determinant':
++                if (matrix1.length !== matrix1[0].length) {
++                    return res.status(400).json({ error: 'Matrix must be square to calculate determinant' });
++                }
++                result = matrixDeterminant(matrix1);
++                break;
++                
++            default:
++                return res.status(400).json({ error: 'Unsupported operation. Use add, multiply, or determinant' });
++        }
++        
++        res.json({ result });
++        
++    } catch (error) {
++        res.status(400).json({ error: error.message });
++    }
++});
++
++// Helper function to check if a matrix is valid
++function isValidMatrix(matrix) {
++    if (!Array.isArray(matrix) || matrix.length === 0) return false;
++    const rowLength = matrix[0].length;
++    return matrix.every(row => 
++        Array.isArray(row) && 
++        row.length === rowLength && 
++        row.every(Number.isFinite)
++    );
++}
++
++// Helper function to compute convergents of continued fractions
++function computeConvergent(a0, period, terms) {
++    // Initialize convergents
++    // h[-2] = 0, h[-1] = 1
++    // k[-2] = 1, k[-1] = 0
++    let h_prev2 = 0n, h_prev1 = 1n;
++    let k_prev2 = 1n, k_prev1 = 0n;
++
++    // First term: a0/1
++    let h = BigInt(a0) * h_prev1 + h_prev2;
++    let k = BigInt(a0) * k_prev1 + k_prev2;
++
++    if (terms === 1) {
++        return { numerator: h, denominator: k };
++    }
++
++    // Shift values for next iteration
++    [h_prev2, h_prev1] = [h_prev1, h];
++    [k_prev2, k_prev1] = [k_prev1, k];
++
++    // For terms > 1, use the period
++    for (let i = 1; i < terms; i++) {
++        const a = i === 1 ? BigInt(a0) : BigInt(period[(i - 2) % period.length]);
++        h = a * h_prev1 + h_prev2;
++        k = a * k_prev1 + k_prev2;
++
++        // Shift values for next iteration
++        [h_prev2, h_prev1] = [h_prev1, h];
++        [k_prev2, k_prev1] = [k_prev1, k];
++    }
++
++    return {
++        numerator: h,
++        denominator: k
++    };
++}
++
++// Task-009: Continued Fraction
++router.get('/continued_fraction', (req, res) => {
++    try {
++        const n = parseInt(req.query.n, 10);
++        const terms = req.query.terms ? parseInt(req.query.terms, 10) : null;
++        
++        if (isNaN(n) || n < 1) {
++            return res.status(400).json({ error: 'n must be a positive integer' });
++        }
++        
++        const { a0, period } = continuedFractionSqrt(n);
++        
++        // For perfect squares
++        if (period.length === 1 && period[0] === a0) {
++            return res.json({ period: [a0] });
++        }
++        
++        // If no terms specified, just return the period
++        if (terms === null) {
++            return res.json({ period: [a0, ...period] });
++        }
++        
++        if (terms <= 0) {
++            return res.status(400).json({ error: 'terms must be a positive integer' });
++        }
++        
++        // Calculate the continued fraction approximation
++        const { numerator, denominator } = computeConvergent(a0, period, terms);
++        
++        res.json({
++            period: [a0, ...period],
++            approximation: `${numerator}/${denominator}`
++        });
++        
++    } catch (error) {
++        res.status(400).json({ error: error.message });
++    }
++});
++
++// Task-009: Diophantine Equation Solver
++router.get('/diophantine', (req, res) => {
++    try {
++        const a = parseInt(req.query.a, 10);
++        const b = parseInt(req.query.b, 10);
++        const c = parseInt(req.query.c, 10);
++        
++        if (isNaN(a) || isNaN(b) || isNaN(c)) {
++            return res.status(400).json({ error: 'a, b, and c must be integers' });
++        }
++        
++        const solution = solveDiophantine(a, b, c);
++        
++        // Convert the solution to a serializable format
++        const d = gcd(a, b);
++        const bDivD = b / d;
++        const aDivD = a / d;
++        
++        const serializedSolution = {
++            x: solution.x,
++            y: solution.y,
++            general_x: `x = ${solution.x} + (${bDivD}) * t`,
++            general_y: `y = ${solution.y} - (${aDivD}) * t`,
++            // Add verification for testing
++            verification: {
++                left: a * solution.x + b * solution.y,
++                right: c,
++                valid: a * solution.x + b * solution.y === c
++            }
++        };
++        
++        res.json({ solution: serializedSolution });
++        
++    } catch (error) {
++        if (error.message === 'No integer solutions exist' || error.message === 'No solution exists') {
++            return res.status(400).json({ error: 'No integer solutions exist' });
++        }
++        res.status(400).json({ error: error.message });
++    }
++});
++
++module.exports = router;
+diff --git a/server/services/calculator.js b/server/services/calculator.js
+index fb5ba03..8dd170d 100644
+--- a/server/services/calculator.js
++++ b/server/services/calculator.js
+@@ -1 +1,144 @@
+-function factorial(n){if(n<0)throw new Error('neg');let r=1;for(let i=2;i<=n;i++)r*=i;return r;}function fibonacci(n){if(n<0)throw new Error('neg');let a=0,b=1;for(let i=0;i<n;i++){[a,b]=[b,a+b];}return a;}function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}function lcm(a,b){if(a===0||b===0)return 0;return Math.abs(a*b)/gcd(a,b);}function prime(n){if(n<2)return false;for(let i=2;i*i<=n;i++){if(n%i===0)return false;}return true;}function primesUpTo(n){const out=[];for(let i=2;i<=n;i++){if(prime(i))out.push(i);}return out;}function mean(arr){return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length:0;}function variance(arr){if(arr.length<2)return 0;const m=mean(arr);return arr.reduce((s,x)=>s+(x-m)*(x-m),0)/(arr.length-1);}function stddev(arr){return Math.sqrt(variance(arr));}module.exports={factorial,fibonacci,gcd,lcm,prime,primesUpTo,mean,variance,stddev};
++function factorial(n) { if (n < 0) throw new Error('neg'); let r = 1; for (let i = 2; i <= n; i++) r *= i; return r; }
++
++function fibonacci(n) { if (n < 0) throw new Error('neg'); let a = 0, b = 1; for (let i = 0; i < n; i++) { [a, b] = [b, a + b]; } return a; }
++
++function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; }
++
++function lcm(a, b) { if (a === 0 || b === 0) return 0; return Math.abs(a * b) / gcd(a, b); }
++
++function prime(n) { if (n < 2) return false; for (let i = 2; i * i <= n; i++) { if (n % i === 0) return false; } return true; }
++
++function primesUpTo(n) { const out = []; for (let i = 2; i <= n; i++) { if (prime(i)) out.push(i); } return out; }
++
++function mean(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0; }
++
++function variance(arr) { if (arr.length < 2) return 0; const m = mean(arr); return arr.reduce((s, x) => s + (x - m) * (x - m), 0) / (arr.length - 1); }
++
++function stddev(arr) { return Math.sqrt(variance(arr)); }
++
++// Matrix operations
++function matrixAdd(a, b) {
++    if (a.length !== b.length || a[0].length !== b[0].length) {
++        throw new Error('Matrices must have the same dimensions');
++    }
++    return a.map((row, i) => row.map((val, j) => val + b[i][j]));
++}
++
++function matrixMultiply(a, b) {
++    if (a[0].length !== b.length) {
++        throw new Error('Incompatible matrix dimensions for multiplication');
++    }
++    const result = Array(a.length).fill().map(() => Array(b[0].length).fill(0));
++    for (let i = 0; i < a.length; i++) {
++        for (let j = 0; j < b[0].length; j++) {
++            for (let k = 0; k < b.length; k++) {
++                result[i][j] += a[i][k] * b[k][j];
++            }
++        }
++    }
++    return result;
++}
++
++function matrixDeterminant(matrix) {
++    if (matrix.length !== matrix[0].length) {
++        throw new Error('Matrix must be square');
++    }
++    const n = matrix.length;
++    if (n === 1) return matrix[0][0];
++    if (n === 2) {
++        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
++    }
++    let det = 0;
++    for (let i = 0; i < n; i++) {
++        const minor = matrix.slice(1).map(row => row.filter((_, j) => j !== i));
++        det += matrix[0][i] * (i % 2 === 0 ? 1 : -1) * matrixDeterminant(minor);
++    }
++    return det;
++}
++
++// Continued fraction for square root
++function continuedFractionSqrt(n) {
++    if (n < 0 || !Number.isInteger(n)) {
++        throw new Error('n must be a non-negative integer');
++    }
++    
++    const a0 = Math.floor(Math.sqrt(n));
++    if (a0 * a0 === n) {
++        return { a0, period: [a0] };
++    }
++    
++    let m = 0;
++    let d = 1;
++    let a = a0;
++    const period = [];
++    const seen = new Map();
++    
++    while (true) {
++        m = d * a - m;
++        d = Math.floor((n - m * m) / d);
++        a = Math.floor((a0 + m) / d);
++        
++        period.push(a);
++        
++        // Check if we've seen this state before
++        const key = `${m},${d},${a}`;
++        if (seen.has(key)) {
++            // Remove the last element as it's the start of the repeating part
++            period.pop();
++            break;
++        }
++        seen.set(key, true);
++    }
++    
++    return { a0, period };
++}
++
++// Diophantine equation solver
++function solveDiophantine(a, b, c) {
++    if (!Number.isInteger(a) || !Number.isInteger(b) || !Number.isInteger(c)) {
++        throw new Error('Coefficients must be integers');
++    }
++    
++    // Handle the case when both a and b are zero
++    if (a === 0 && b === 0) {
++        if (c === 0) {
++            return { x: 0, y: 0 };
++        } else {
++            throw new Error('No solution exists');
++        }
++    }
++    
++    function extendedGcd(a, b) {
++        if (b === 0) {
++            return { gcd: a, x: 1, y: 0 };
++        }
++        const { gcd, x: x1, y: y1 } = extendedGcd(b, a % b);
++        return { 
++            gcd, 
++            x: y1, 
++            y: x1 - Math.floor(a / b) * y1 
++        };
++    }
++    
++    const absA = Math.abs(a);
++    const absB = Math.abs(b);
++    const { gcd: d, x, y } = extendedGcd(absA, absB);
++    
++    if (c % d !== 0) {
++        throw new Error('No integer solutions exist');
++    }
++    
++    const k = c / d;
++    const x0 = x * k * (a < 0 ? -1 : 1);
++    const y0 = y * k * (b < 0 ? -1 : 1);
++    
++    return {
++        x: x0,
++        y: y0
++    };
++}
++
++module.exports = {
++    factorial, fibonacci, gcd, lcm, prime, primesUpTo, mean, variance, stddev,
++    matrixAdd, matrixMultiply, matrixDeterminant, continuedFractionSqrt, solveDiophantine
++};
