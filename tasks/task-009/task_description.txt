@@ -1,0 +1,57 @@
+task_description: |
+  Follow numbers within moving chunks of data
+
+  Instructions:
+    Add a fresh endpoint that calculates rolling totals from number lists using a set window size, including tight validation rules. Aim for accurate results along with straightforward logic; stick precisely to the samples shown underneath.
+
+  Requirements (as tested):
+
+    - GET /adv/rolling_stats
+      Query parameters:
+        - nums:
+            description: >
+              A sequence of whole digits split by commas - no gaps, no points.
+              Needs a minimum of k items. Uses only commas to separate them. No other symbols allowed.
+              Might need k values - or even extra. Numbers stay sharp: nothing split or missing.
+              Numbers follow one after another. No gaps, just commas between them.
+        - k:
+            description: >
+              The window size shows how many items to look at together - needs at least two,
+              but no more than what's in nums.
+        - ddof:
+            description: >
+              A number you choose, usually 1. Needs to meet 0 <= ddof < k.
+
+  Validation checks:
+    - Return HTTP 400 if:
+      - nums shows up yet stays empty, has spaces, fractions, or wrong symbols.
+      - k shows up yet isn't complete, falls below 2, or goes beyond how many nums there are.
+      - ddof isn't a whole number, or it falls outside the range 0 <= ddof < k.
+
+  Computation rules:
+    - See each window like a set of k items arranged within nums.
+    - For each window, calculate:
+      - average: basic math average, decimals okay
+      - sample variance with denominator (k minus ddof)
+      - stddev: square root of variance
+    - Response JSON structure:
+      {
+        "means": [m0, m1, ...],
+        "variances": [v0, v1, ...],
+        "stddevs": [s0, s1, ...]
+      }
+      Every spot in those lists matches a single moving frame, lined up step by step.
+
+  Extra features:
+    - Deals with huge amounts - like around a billion - without crashing.
+    - Quick on lists below 2000 items when k is near 50 (about 2 sec run time).
+
+  Notes:
+    - Mainly look at server/routes/advanced.js but also check server/services/calculator.js
+    - You could use server/middleware/verify.js if needed to run checks.
+    - Stick to simple O(nk) approaches; though quicker options work too.
+
+difficulty: medium
+category: Feature
+tags: [node, express, statistics]
+parser_name: pytest
