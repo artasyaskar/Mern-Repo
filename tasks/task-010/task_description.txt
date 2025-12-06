@@ -2,9 +2,9 @@ task_description: |
   Task: Pick a few digits from the sheet - after that, explain where they come from
   simple summary numbers.
 
-  This role adds a small change: it grabs comma-split items either this way or that - short yet clear, skipping repeats or anything stiff
-  figures, checks if stuff matches, then returns the lowest
-  top value right away, mid level comes clear meanwhile shifting across numbers.
+  This role adds a small change: it grabs comma-split items in a simple way,
+  checks that they look like plain whole numbers, then reports back a few
+  basic facts about them.
 
   Requirements (as tested):
 
@@ -31,20 +31,18 @@ task_description: |
 
   {"min": number, "max": number, "mean": number, "range": number}
 
-  - Looks after only a few simple cases
-    1 arrives first, soon after 2 pops in. Next thing you know, 3 turns up - right behind it, 4 tags along.
-    -5, then a zero pops up - right behind it, 5 steps in.
-    A lone clothing item, like "42".
-  - Areas close to numbers behaving just like whole figures, say
-    Start with one, then two comes next, while three follows - this is how progress happens.
-  - Incorrect details from earlier, which should go back
-    HTTP 400.
+  - The tests only touch a few small examples, like short positive lists,
+    a mix with negatives, or a single number such as "42", plus some
+    clearly bad inputs that should return HTTP 400.
 
   Notes:
   A hassle-free method? Try placing it inside server/routes/advanced.js
   Keep small tools by your math gear.
   You don’t need to manage loads of data - tests use small chunks now. Instead of huge stacks, quick mini-pulses work faster. Little slices fit right into the rhythm naturally. Brief inputs keep progress smooth without snags
   lists.
+  Also, solve it in a genuine way: write the real logic for parsing and
+  summarising the numbers, rather than peeking at the task tests or wiring in
+  fixed replies for specific inputs.
 
 difficulty: hard
 category: Feature
