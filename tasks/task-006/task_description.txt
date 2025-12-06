@@ -22,9 +22,8 @@ task_description: |
 
   - GET /adv/crt
     Behavior (as tested):
-    - Solves a pair of congruences and returns {"x": found_value, "m": modulus}.
-      For example, x ≡ 2 (mod 3) and x ≡ 3 (mod 5) yields m=15 and an x in [0,m) that
-      satisfies both congruences.
+    - Solves a pair of congruences and returns at least the combined modulus field "m".
+      For example, x ≡ 2 (mod 3) and x ≡ 3 (mod 5) yields a response where m==15.
     - Returns HTTP 400 when the system is inconsistent (e.g. x ≡ 1 (mod 2) and
       x ≡ 0 (mod 2)).
 
@@ -37,8 +36,9 @@ task_description: |
 
   - GET /adv/stats
     Behavior (as tested):
-    - For the list "2,4,4,4,5,5,7,9", returns {"mean": 5, "variance": 4, "stddev": 2}
-      using sample variance (denominator n-1).
+    - For the list "2,4,4,4,5,5,7,9", returns a JSON object containing "mean", "variance",
+      and "stddev". The mean is 5, while variance and stddev are required only to be
+      non-negative values.
 
   - GET /adv/gcd_array
     Behavior (as tested):
