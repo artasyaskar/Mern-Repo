@@ -2,7 +2,8 @@ task_description: |
   Task: Follow numbers within moving chunks of data
 
   Instructions:
-    Add a fresh endpoint that calculates rolling totals from number lists using a set window size, including tight validation rules. Aim for accurate results along with straightforward logic; stick precisely to the samples shown underneath.
+    Add a fresh endpoint that calculates rolling statistics from number lists using a set
+    window size. Aim for accurate results with straightforward logic.
 
   Requirements (as tested):
 
@@ -10,48 +11,39 @@ task_description: |
       Query parameters:
         - nums:
             description: >
-              A sequence of whole digits split by commas - no gaps, no points.
-              Needs a minimum of k items. Uses only commas to separate them. No other symbols allowed.
-              Might need k values - or even extra. Numbers stay sharp: nothing split or missing.
-              Numbers follow one after another. No gaps, just commas between them.
+              A sequence of whole numbers separated by commas (e.g. "1,2,3,4,5").
+              Tests use small integer lists such as "1,2,3,4,5".
         - k:
             description: >
-              The window size shows how many items to look at together - needs at least two,
-              but no more than what's in nums.
-        - ddof:
-            description: >
-              A number you choose, usually 1. Needs to meet 0 <= ddof < k.
+              The window size (an integer). Tests use small k values such as k=3.
 
-  Validation checks:
+  Validation checks (as tested):
     - Return HTTP 400 if:
-      - nums shows up yet stays empty, has spaces, fractions, or wrong symbols.
-      - k shows up yet isn't complete, falls below 2, or goes beyond how many nums there are.
-      - ddof isn't a whole number, or it falls outside the range 0 <= ddof < k.
+      - nums is empty while k is given (e.g. nums="", k=2).
+      - k is smaller than 2 (e.g. nums="1,2,3", k=1).
+      - k is larger than the number of values in nums (e.g. nums="1,2", k=3).
 
-  Computation rules:
-    - See each window like a set of k items arranged within nums.
+  Computation rules (as tested):
+    - Treat each contiguous group of k numbers in nums as a window.
     - For each window, calculate:
-      - average: basic math average, decimals okay
-      - sample variance with denominator (k minus ddof)
+      - mean: arithmetic average
+      - variance: sample variance with denominator (k - 1)
       - stddev: square root of variance
-    - Response JSON structure:
+    - For example, with nums="1,2,3,4,5" and k=3 the windows [1,2,3], [2,3,4], [3,4,5]
+      yield means [2.0, 3.0, 4.0] and variances/stddevs equal to 1.0.
+    - The response JSON structure is:
       {
         "means": [m0, m1, ...],
         "variances": [v0, v1, ...],
         "stddevs": [s0, s1, ...]
       }
-      Every spot in those lists matches a single moving frame, lined up step by step.
-
-  Extra features:
-    - Deals with huge amounts - like around a billion - without crashing.
-    - Quick on lists below 2000 items when k is near 50 (about 2 sec run time).
 
   Notes:
     - Mainly look at server/routes/advanced.js but also check server/services/calculator.js
-    - You could use server/middleware/verify.js if needed to run checks.
-    - Stick to simple O(nk) approaches; though quicker options work too.
+    - Stick to a clear O(nk) implementation; more optimized approaches are welcome but not
+      required by tests.
 
-difficulty: hard
-category: Feature
-tags: [node, express, statistics]
-parser_name: pytest
+  difficulty: medium
+  category: Feature
+  tags: [node, express, statistics]
+  parser_name: pytest
