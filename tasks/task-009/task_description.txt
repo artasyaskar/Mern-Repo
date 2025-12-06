@@ -31,11 +31,11 @@ task_description: |
   - stddev: calculated by getting the square root of variance
   - For example: if nums equals "1,2,3,4,5" and k is 3, you get chunks like [1,2,3], next comes [2,3,4], followed by [3,4,5]
     yield holds steady at about [2.0, 3.0, 4.0], while variance remains close to 1.0.
-  - The response JSON structure is:
+  - The response JSON structure is an object with three array fields:
     {
-      m0 – though really m1 – plus just a touch more
-      v0 together with v1, plus a few similar ones
-      [s0, s1, ...]
+      "means": [m0, m1, ...],
+      "variances": [v0, v1, ...],
+      "stddevs": [s0, s1, ...]
     }
 
   Notes:
