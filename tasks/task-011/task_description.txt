@@ -27,7 +27,9 @@ task_description: |
     - total: all bits summed once tossed together, sorta like piling bricks until they tip over
     - average: the center number you get when summing amounts then splitting by count, displayed with a dot
 
-  {"error": "No input provided to rewrite."}
+  Return these results in a JSON object exactly like this:
+
+    {"count": number, "sum": number, "average": number}
 
   Five items stay put. But just two go together. Then, outta nowhere, another seven pop up
 
