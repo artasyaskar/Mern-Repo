@@ -1,5 +1,5 @@
 task_description: |
-  Watch numbers change when bits of data switch places
+  Task: Watch numbers change when bits of data switch places
 
   Instructions:
   Create a fresh tool - this one tracks trends by crunching digits step by step through a line of values
