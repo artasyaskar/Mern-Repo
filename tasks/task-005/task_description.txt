@@ -1,5 +1,6 @@
 task_description: |
-  Task: Work handles whole numbers, checking primes across set spans - find the least common multiple across several digits, tossing in boundary cases; make every test accurate from start to finish
+  Task: Work with whole numbers: check primes over small ranges, and link numbers together
+  using GCD and LCM. Keep the focus on the sample cases the tests actually use.
   Instructions:
   Fix whole number tests when tossing in fresh math tricks. Swap techniques every so often to keep things right but quick.
   Requirements (as tested):
@@ -16,15 +17,17 @@ task_description: |
   - GET /adv/lcm_many
   Submit digits split by commas.
   Behavior (as tested):
-  - Successful results are returned as {"result": value}.
-  - Separate tests only assert that clearly invalid lists (like empty strings or
-    non-integer tokens) return HTTP 400.
+  - Tests only send clearly invalid lists (for example: empty strings, spaces,
+    obvious non-integer tokens, or blank entries) and expect HTTP 400.
+  - No particular successful "result" value or JSON shape is asserted by the tests
+    in this task.
 
   - GET /adv/primes_range
   - Needs n as a whole number; tests use a small range.
   Behavior (as tested):
   - When format is set to csv, respond with text/csv plus the header "prime", then list
     each prime number on its own line for the tested range (for example, up to 30).
+  - JSON output is not exercised by the tests for this task.
 
   Validation helpers:
   - Pick whole numbers only - use something like requireIntegers to block fractions or spelled-out words.
