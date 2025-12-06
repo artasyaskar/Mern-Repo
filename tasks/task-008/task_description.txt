@@ -1,45 +1,39 @@
 task_description: |
-  Task: Set up three check points - stick to precise numbers at every one. Create the setup so it flows smoothly, but stays broad enough to cover all testing demands on goal.
+  Task: Set up three check points - each one checks inputs and, when appropriate, returns
+  HTTP 400 on bad data.
 
   Instructions:
-  Launch new endpoints that return HTTP 400 when data's wrong. Aim sharp - use direct, practical methods instead.
+  Launch or update endpoints so they perform simple validation and, where covered by tests,
+  basic computations. Aim for direct, practical logic.
 
   Requirements (as tested):
 
   1. GET /adv/prime_factors
   Query: n
-  n must be an integer and at least 2.
-  Behavior:
-  Hand over the prime factors of n, put them from low to high, include duplicates when necessary.
-  Example: 60 becomes [2,2,3,5]; 97 stays [97].
-  In this task, tests only check that obviously invalid inputs (like n=1 or non-numeric text) return HTTP 400.
+  Behavior (as tested):
+  - Tests call this endpoint with invalid values like n=1 and a non-numeric string, and
+    expect HTTP 400.
+  - No tests assert specific prime-factor outputs; you only need to ensure these invalid
+    inputs return 400.
 
   2. GET /adv/rolling_median
   Query: nums, k
-  - nums: list of whole numbers separated by commas, no spaces or periods. Needs at least one value.
-  - k: an odd integer starting from 1.
-  Behavior (as covered by tests):
-  - For each group of k things, sort 'em first - then pick the middle one.
-  - Return the list of those middle values.
-  Example:
-  nums are 1,3,2,6,4 but k equals 3
-  Windows: [1,3,2], [3,2,6], [2,6,4]
-  Medians: [2,3,4]
-  With k=1, the result is just the original list.
-  For this task, tests only require you to reject clearly invalid inputs where k is even or nums is empty (HTTP 400).
+  Behavior (as tested):
+  - Tests send clearly invalid inputs and expect HTTP 400 in these cases:
+    - nums="1,2,3", k=2 (even k)
+    - nums="", k=1 (empty nums)
+  - No tests assert any particular successful median values.
 
   3. GET /adv/unique_mode
   Query: nums
-  nums: list of whole numbers, separated by commas - no spaces, no periods. Must not be empty.
-  Behavior (as covered by tests):
-  - If one number pops up more often than the rest, return {"result": x}.
-  - If several values tie for highest frequency in a simple case (like 2 and 3 both twice), return HTTP 400.
-  - A single entry, such as nums="42", runs without issues - gives back 200 along with the value.
-  - One example of bad data (like including 3.5) must trigger HTTP 400; no broader validation is required here.
-
-  Validation helpers:
-  1234567890.
-  Give it a shot - one tool fits single numbers or bunches, doesn’t matter. Checks singles the same way as chunks, zero tweaks required. Deals with any situation smooth-like, two digits or twenty. Works how you need, no headaches.
+  Behavior (as tested):
+  - If one number appears more often than the rest in a simple list like "1,2,2,3",
+    the endpoint should return {"result": 2} with HTTP 200.
+  - If there is a tie for highest frequency in a simple case like "2,2,3,3", the
+    endpoint should return HTTP 400.
+  - A single entry such as nums="42" should return HTTP 200 with {"result": 42}.
+  - One malformed list example, such as nums="1,2,3.5", must return HTTP 400; broader
+    validation is not asserted by tests.
 
   Things you may need to adjust:
   - server/middleware/validate.js
@@ -50,7 +44,7 @@ task_description: |
   - Tests use a small, fixed set of examples for each endpoint.
   - Focus on making the logic clear and correct for these representative cases.
 
-difficulty: hard
+difficulty: medium
 category: Feature
 tags: [node, express, algorithms]
 parser_name: pytest
