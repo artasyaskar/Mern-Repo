@@ -9,8 +9,9 @@ task_description: |
   p: any figure between zero and one hundred, never less, never more.
   Behavior:
   Look at the numbered options. Pick a spot using this method: grab p, times it by n, split by 100, then push it up to next whole number - unless it’s already one. Still, don’t let it drop below 1 or jump past n. If p is zero, pick number one straight away.
-  Choose the number you land on as you count up from one.
-  - Here's the deal: take nums = 1,2,3,4; now if p = 75, you do rank = ceil(0.75 × 4), that comes out to 3 - so result is 3.
+  Choose the number you land on as you count up from one, and return it in a JSON object:
+  {"result": value}.
+  - Here's the deal: take nums = 1,2,3,4; now if p = 75, you do rank = ceil(0.75 × 4), that comes out to 3 - so result is 3, so the response is {"result": 3}.
   - Wrong info added → triggers error 400.
 
   - GET /adv/convolve
@@ -20,6 +21,7 @@ task_description: |
   - Work on every math part separately – don't loop or skip ahead
   c[k] comes from multiplying a[i] with b[k−i], adding those values where i fits, as k runs from 0 up to len(a) combined with len(b), minus one.
   - Here's the deal: if a is 1,2,3 but b stands at 4,5 → c becomes [4,13,22,15].
+  - The endpoint should return that list as {"result": [4,13,22,15]} and similar for other inputs.
   - Wrong ask → HTTP 400.
 
   - GET /adv/mmm
