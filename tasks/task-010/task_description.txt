@@ -1,5 +1,5 @@
 task_description: |
-  Pick a few digits from the sheet - after that, explain where they come from
+  Task: Pick a few digits from the sheet - after that, explain where they come from
   simple summary numbers.
 
   This role adds a small change: it grabs comma-split items either this way or that - short yet clear, skipping repeats or anything stiff
@@ -29,7 +29,7 @@ task_description: |
 
   {"error": "No input provided to rewrite."}
 
-  {"min": number, "so": number, "mean": number, "range": number}
+  {"min": number, "max": number, "mean": number, "range": number}
 
   - Looks after only a few simple cases
     1 arrives first, soon after 2 pops in. Next thing you know, 3 turns up - right behind it, 4 tags along.
