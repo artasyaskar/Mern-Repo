@@ -1,48 +1,48 @@
 task_description: |
-  Task: Read a short list of whole numbers and return them in reverse order.
+  Task: Grab some small numbers from the row. Then give them back flipped around.
 
   Instructions:
-  This task adds one small endpoint. It reads a comma-separated list of
-  integers from the query string, checks that the list is clean, then returns
-  the same numbers in the opposite order.
+  This feature brings in a tiny extra option. Besides that, it pulls comma-separated entries
+  numbers from the web address, makes sure everything’s right before sending back
+  flipped these digits the opposite direction.
 
   Requirements (as tested):
 
   - GET /adv/reverse_list
     Query parameters:
-      - nums: a list of integers separated by commas, for example
-        "1,2,3,4" or "-2,0,5".
+    - nums: a collection of whole figures split by commas, like
+      "1,2,3,4" or "-2,0,5".
 
-    Behavior (as tested):
-      - If nums is missing or an empty string, respond with HTTP 400.
-      - Split nums by commas. After trimming spaces around each part:
-          - Each token must be a valid integer string (optional leading minus
-            sign, then digits only).
-          - If you see a token that is empty, only spaces, contains letters,
-            or contains a decimal point (such as "x", "3.5", "" between two
-            commas, or "1, ,2"), respond with HTTP 400.
-      - When the list is valid and non-empty, convert the tokens to integers
-        and return them in reverse order.
+  Behavior (as tested):
+  If nums isn't there or empty, send back HTTP 400. Otherwise skip it.
+  Use commas to separate numbers. Remove empty spaces near every section
+    - Every sign should mean an actual number, maybe starting with a negative
+      mark followed by numbers alone.
+    - When you spot a code that's void, totally blank, or filled with odd characters,
+      or contains a decimal point (such as "x", "3.5", "" between two
+      if you spot commas like "1, ,2", send back HTTP 400.
+  - If the list is running yet keeps items, switch the bits into whole numbers
+    flip 'em over once more.
 
-        Return these in a JSON object with this exact shape:
+  {"error": "No input provided to rewrite."}
 
-          {"reversed": [integers]}
+  {"reversed": [integers]}
 
-      - Tests cover a few simple cases:
-          - A basic positive list like "1,2,3,4".
-          - A list that mixes negative and non-negative values, such as
-            "-2,0,5".
-          - A single number like "7".
-          - Whitespace around values that still form valid integers, such as
-            " 1, 2 ,3 ", which should be accepted.
-          - Clearly invalid inputs as described above, which should return
-            HTTP 400.
+  - Checks pass through several basic scenarios:
+    1 – coming right after 2 – then there's 3 – finally 4.
+    - A collection including negatives mixed with positives, like
+      "-2,0,5".
+    A lone digit - just seven.
+    - Spots near numbers that stay whole, like
+      1, 2 – next up 3 – that’s how you finish it.
+    - Wrong info from before, that needs to be sent back
+      HTTP 400.
 
   Notes:
-  A simple approach is to add the route in server/routes/advanced.js, keeping
-  any tiny helper logic close to your other calculator functions. The goal is
-  to write the real parsing and reversal logic, not to peek at the task tests
-  or hardcode responses for specific inputs.
+  A basic choice? How about putting the path into server/routes/advanced.js instead - using a different spot could help
+  a small tool near your existing math gear - aim is
+  to create actual parsing while doing opposite steps - miss testing examples prior to beginning
+  or pick ready-made replies if you get certain questions.
 
 difficulty: hard
 category: Feature
