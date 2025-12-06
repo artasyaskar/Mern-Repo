@@ -1,0 +1,10 @@
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    image: mern-training-base:task-010
+    command: ["./tasks/task-010/run-tests.sh"]
+    volumes:
+      - ../..:/app
+    working_dir: /app

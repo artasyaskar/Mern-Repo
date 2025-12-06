@@ -1,0 +1,45 @@
+task_description: |
+  Task: Summarize a small list of integers with simple center and spread metrics
+
+  Instructions:
+  Create a fresh endpoint that reads a short list of whole numbers from the query
+  string, validates them, then returns a few basic statistics. Follow the test
+  examples exactly; you only need to support the concrete cases used in tests.
+
+  Requirements (as tested):
+
+  - GET /adv/center_range
+    Query parameters:
+      - nums: comma-separated integers, e.g. "1,2,3,4" or "-5,0,5"
+
+    Behavior (as tested):
+      - Parse nums into a non-empty list of integers. If nums is missing, empty,
+        or contains any token that is not a valid integer (e.g. "x", "3.5",
+        extra commas, or stray spaces that donot form a valid number), respond
+        with HTTP 400.
+
+      - For valid input, compute:
+          - min: smallest value in the list (integer)
+          - max: largest value in the list (integer)
+          - mean: arithmetic average as a floating-point number
+          - range: max - min
+
+        The response JSON shape is:
+          {"min": number, "max": number, "mean": number, "range": number}
+
+      - Tests only use small lists of integers, including negative values and
+        single-element lists. You do not need to optimize for very large inputs.
+
+  Notes:
+  - Keep the implementation straightforward and deterministic; no randomness or
+    timing tricks.
+  - A natural place for the core logic is in server/services/calculator.js, with
+    routing and basic query parsing in server/routes/advanced.js. If you prefer,
+    you may also reuse helpers from server/utils/array.js.
+  - Validation can be done inline in the route or via a small helper; tests only
+    check the behaviors described above.
+
+difficulty: easy
+category: Feature
+tags: [node, express, stats]
+parser_name: pytest
