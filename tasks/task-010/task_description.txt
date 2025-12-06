@@ -1,6 +1,7 @@
 task_description: |
   Task: Pick a few digits from the sheet - after that, explain where they come from
   simple summary numbers.
+  
   Instructions:
   This role adds a small change: it grabs comma-split items in a simple way,
   checks that they look like plain whole numbers, then reports back a few
