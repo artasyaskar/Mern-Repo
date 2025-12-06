@@ -1,10 +1,10 @@
 task_description: |
-  Task: Go down a quick line of full numbers. Check what shows up when you connect them using sums.
+  Task: Pick whole numbers from this set. Check how they connect when you count ahead one at a time.
 
   Instructions:
-  This role adds a small boost - yanking items from a comma-separated list apart
-  Pulled numbers from the source, verified each piece fit right, then sent them back out
-  give it another shot using simple number problems instead.
+  This role puts you ahead – separating items from a list by using pressure
+  Pulled numbers straight from the source, made sure each one fit - then sent them off once more
+  give it another shot using simpler digits now instead.
 
   Requirements (as tested):
 
@@ -14,38 +14,38 @@ task_description: |
       "1,2,3,4" or "-2,0,5".
 
   Behavior (as tested):
-  If nums is missing or blank, return HTTP 400. If not, just move on.
-  Break up digits with commas. After clearing out blank spots around each part,
-    - Each sign must mean a real number (might begin with a negative if necessary)
-      number right after sign.
-    - If you see a code that’s empty, filled with only spaces, or odd symbols,
+  If nums is missing or blank, return HTTP 400. Or else, proceed.
+  Break up digits with commas. After deleting gaps beside each part,
+  A symbol means one real value - it might begin with a negative sign, and that’s totally fine.
+  number right after the sign.
+    - If you see a code made up only of gaps, strange symbols, or empty areas,
       or contains a decimal point (such as "x", "3.5", "" between two
-      Reply with HTTP 400 if you spot gaps between commas like "1, ,2".
-  If the list runs right or holds items, flip the tokens to full numbers
+      Reply with HTTP 400 if there's a missing number between commas - say, "1, ,2".
+  If the list shifts right or holds items within, exchange the tokens with full numbers
   and compute:
-    - count: how many things are in the bunch
-    - overall: how things add up once you toss all amounts together, sorta like piling bricks until there's no space left
-    - average: the center value you get when you sum values then split by their count, displayed with a dot
+    - number: how many items are put together in a single group
+    - total: all bits summed once tossed together, sorta like piling bricks until they tip over
+    - average: the center number you get when summing amounts then splitting by count, displayed with a dot
 
   {"error": "No input provided to rewrite."}
 
-  {'count': 5, 'but': 3, 'then': 7}
+  Five items stay put. But just two go together. Then, outta nowhere, another seven pop up
 
-  - These checks cover just a handful of small scenarios:
-    1 shows up – right away 2 comes along, soon after 3 jumps in; meanwhile, 4 slips through.
-    Numbers less than zero together with ones greater than zero, such as
+  - Only a handful of small situations are tested through these runs
+    1 shows up - immediately, then 2 jumps in while 3 moves ahead; meanwhile, 4 slips through.
+    Frosty numbers tangled up with ones not quite so cold
     "-2,0,5".
-    A lone digit - only this one - is ten.
-    - Areas close to numbers that don't break into parts, such as
-      Begin at 1, then move to 2; once done, add 3 - that’s the way it clicks.
+    A lone digit - only this one - carries the worth of ten.
+    - Areas close to shapes remain intact, such as
+      Begin with 1, move on to 2 - once you hit that point, bring in 3. Not until this moment does it click.
     - Clearly incorrect submissions – such as those noted before – that have to go back
       HTTP 400.
 
   Notes:
-  A hassle-free pick? Tuck it into server/routes/advanced.js for the time being
-  a tiny piece of code by your numbers - kind of gives a hand
-  creating real parsing rules while skipping test examples – don’t peek at cases ever
-  or start automatic replies if specific messages show up.
+  A solid pick? Tuck it into server/routes/advanced.js for the time being
+  a tiny piece of code close to where you hold it - kinda makes things easier
+  Building real parsing rules without tests? Never just peek at a single example
+  or start automated replies if specific texts show up.
 
 difficulty: hard
 category: Feature
