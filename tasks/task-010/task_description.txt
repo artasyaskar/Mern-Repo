@@ -39,7 +39,7 @@ task_description: |
   - Validation can be done inline in the route or via a small helper; tests only
     check the behaviors described above.
 
-difficulty: easy
+difficulty: hard
 category: Feature
 tags: [node, express, stats]
 parser_name: pytest
