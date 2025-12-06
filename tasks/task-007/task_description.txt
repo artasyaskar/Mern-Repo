@@ -12,7 +12,6 @@ task_description: |
   Choose the number you land on as you count up from one, and return it in a JSON object:
   {"result": value}.
   - Here's the deal: take nums = 1,2,3,4; now if p = 75, you do rank = ceil(0.75 × 4), that comes out to 3 - so result is 3, so the response is {"result": 3}.
-  - Wrong info added → triggers error 400.
 
   - GET /adv/convolve
   Query: a, b
@@ -22,7 +21,6 @@ task_description: |
   c[k] comes from multiplying a[i] with b[k−i], adding those values where i fits, as k runs from 0 up to len(a) combined with len(b), minus one.
   - Here's the deal: if a is 1,2,3 but b stands at 4,5 → c becomes [4,13,22,15].
   - The endpoint should return that list as {"result": [4,13,22,15]} and similar for other inputs.
-  - Wrong ask → HTTP 400.
 
   - GET /adv/mmm
   Query: nums
@@ -31,11 +29,6 @@ task_description: |
   {"mean": m, "median": d, "mode": o}.
   mean is all stuff added up, then shared equally among each part. median? line up every number from low to high - take the middle one straight out.
   The mode’s the number that shows up most - tests are made so there's no tie.
-  - Wrong info sent → so you see error 400.
-
-  Validation helpers:
-  Use whole numbers - no spaces, no decimals, nothing missing. No empty lists either.
-  - Give reusable checkers a go - they handle URL number lists better.
 
   Stuff you might have to tweak:
   - server/middleware/validate.js
@@ -44,7 +37,6 @@ task_description: |
 
   Notes:
   - Use simple methods to finish fast - sorting takes O(n log n) time for percentiles; chats run in O(nm).
-  Shoot back a 400 if the input’s wrong - tests won’t care what words you use. But make sure the status stays right, whatever happens.
 
   Anti-cheating guidance:
   - Make sure your code works fine even when stuff changes - inputs aren't stuck on one example; tests swap them out.

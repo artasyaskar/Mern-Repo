@@ -19,21 +19,6 @@ def test_percentile_nearest_rank_basic_and_edges():
     assert r3.status_code == 200 and r3.json()["result"] == 5
 
 
-def test_percentile_validation_range_and_types():
-    """/adv/percentile: nums must be integers; p must be integer in [0,100]."""
-    for params in [
-        {"nums": "", "p": 50},               # empty list
-        {"nums": "1,,2", "p": 50},          # blank entry
-        {"nums": "1,2.0,3", "p": 50},       # decimal
-        {"nums": "1,2,3", "p": -1},         # p out of range
-        {"nums": "1,2,3", "p": 101},        # p out of range
-        {"nums": "1,2,3", "p": "50.5"},    # non-integer p
-        {"nums": ".,2,3", "p": 50},         # invalid token
-    ]:
-        r = requests.get(f"{BASE}/adv/percentile", params=params, timeout=5)
-        assert r.status_code == 400
-
-
 def test_convolve_basic_example_and_signs():
     """/adv/convolve computes full linear convolution correctly (example and negative values)."""
     r1 = requests.get(f"{BASE}/adv/convolve", params={"a": "1,2,3", "b": "4,5"}, timeout=5)
@@ -42,19 +27,6 @@ def test_convolve_basic_example_and_signs():
     r2 = requests.get(f"{BASE}/adv/convolve", params={"a": "2,-1", "b": "3,0,1"}, timeout=5)
     # Manual conv: [2*3, 2*0+(-1)*3, 2*1+(-1)*0, (-1)*1] -> [6, -3, 2, -1]
     assert r2.status_code == 200 and r2.json()["result"] == [6, -3, 2, -1]
-
-
-def test_convolve_validation_lists():
-    """/adv/convolve: lists must be non-empty integer lists with no blanks or decimals."""
-    for params in [
-        {"a": "", "b": "1"},
-        {"a": "1,2", "b": ""},
-        {"a": "1,,2", "b": "3"},
-        {"a": "1,2", "b": "3.5"},
-        {"a": " . ", "b": "1"},
-    ]:
-        r = requests.get(f"{BASE}/adv/convolve", params=params, timeout=5)
-        assert r.status_code == 400
 
 
 def test_mmm_mean_median_mode_typical():
