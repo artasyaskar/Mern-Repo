@@ -1,0 +1,89 @@
+diff --git a/server/routes/advanced.js b/server/routes/advanced.js
+index 0144b18..620af30 100644
+--- a/server/routes/advanced.js
++++ b/server/routes/advanced.js
+@@ -1 +1,83 @@
+-const express=require('express');const {requireNumbers}=require('../middleware/validate');const {factorial,fibonacci,gcd,lcm,primesUpTo}=require('../services/calculator');const router=express.Router();router.get('/factorial',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:factorial(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/fibonacci',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);try{res.json({result:fibonacci(n)})}catch(e){res.status(400).json({error:e.message})}});router.get('/gcd',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:gcd(a,b)})});router.get('/lcm',requireNumbers(['a','b']),(req,res)=>{const a=Number(req.query.a);const b=Number(req.query.b);res.json({result:lcm(a,b)})});router.get('/primes',requireNumbers(['n']),(req,res)=>{const n=Number(req.query.n);res.json({result:primesUpTo(n)})});module.exports=router;
++const express = require('express');
++const { requireNumbers } = require('../middleware/validate');
++const { factorial, fibonacci, gcd, lcm, primesUpTo } = require('../services/calculator');
++
++const router = express.Router();
++
++router.get('/factorial', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  try {
++    res.json({ result: factorial(n) });
++  } catch (e) {
++    res.status(400).json({ error: e.message });
++  }
++});
++
++router.get('/fibonacci', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  try {
++    res.json({ result: fibonacci(n) });
++  } catch (e) {
++    res.status(400).json({ error: e.message });
++  }
++});
++
++router.get('/gcd', requireNumbers(['a', 'b']), (req, res) => {
++  const a = Number(req.query.a);
++  const b = Number(req.query.b);
++  res.json({ result: gcd(a, b) });
++});
++
++router.get('/lcm', requireNumbers(['a', 'b']), (req, res) => {
++  const a = Number(req.query.a);
++  const b = Number(req.query.b);
++  res.json({ result: lcm(a, b) });
++});
++
++router.get('/primes', requireNumbers(['n']), (req, res) => {
++  const n = Number(req.query.n);
++  res.json({ result: primesUpTo(n) });
++});
++
++router.get('/center_range', (req, res) => {
++  const raw = req.query.nums;
++
++  if (typeof raw !== 'string' || raw.trim() === '') {
++    res.status(400).json({ error: 'nums required' });
++    return;
++  }
++
++  const tokens = raw.split(',');
++  const nums = [];
++
++  for (const t of tokens) {
++    const s = String(t).trim();
++    if (s === '' || !/^[-]?\d+$/.test(s)) {
++      res.status(400).json({ error: 'invalid nums' });
++      return;
++    }
++    nums.push(parseInt(s, 10));
++  }
++
++  if (!nums.length) {
++    res.status(400).json({ error: 'nums required' });
++    return;
++  }
++
++  let min = nums[0];
++  let max = nums[0];
++  let sum = 0;
++
++  for (const x of nums) {
++    if (x < min) min = x;
++    if (x > max) max = x;
++    sum += x;
++  }
++
++  const mean = sum / nums.length;
++  const range = max - min;
++
++  res.json({ min, max, mean, range });
++});
++
++module.exports = router;
