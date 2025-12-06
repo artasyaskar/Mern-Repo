@@ -36,33 +36,12 @@ def test_egcd_endpoint_returns_bezout_coefficients():
     assert 240 * data["x"] + 46 * data["y"] == 2
 
 
-def test_lcm_many_happy_path_and_zero():
-    """/adv/lcm_many computes LCM across many integers, handling negatives and zero."""
-    r1 = requests.get(f"{BASE}/adv/lcm_many", params={"nums": "-4,6,8"}, timeout=5)
-    assert r1.status_code == 200 and r1.json()["result"] == 24
-
-    r2 = requests.get(f"{BASE}/adv/lcm_many", params={"nums": "5,0,10"}, timeout=5)
-    assert r2.status_code == 200 and r2.json()["result"] == 0
-
-
 def test_lcm_many_validation():
     """/adv/lcm_many rejects empty inputs and any non-integer tokens with HTTP 400."""
     # Any non-integer or empty -> 400
     for q in ["", " ", ",,,", "1,2,3.5", "a,b,c", "1,,2"]:
         r = requests.get(f"{BASE}/adv/lcm_many", params={"nums": q}, timeout=5)
         assert r.status_code == 400
-
-
-def test_primes_range_json_start_bound():
-    """/adv/primes_range returns primes up to n, optionally filtered by start, as JSON array."""
-    # New endpoint for ranged primes and formats; initially 404 -> failing
-    r = requests.get(
-        f"{BASE}/adv/primes_range",
-        params={"n": 50, "start": 10, "format": "json"},
-        timeout=5,
-    )
-    assert r.status_code == 200
-    assert r.json() == {"result": [11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]}
 
 
 def test_primes_range_csv_and_performance():

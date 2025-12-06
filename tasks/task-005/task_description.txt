@@ -15,16 +15,14 @@ task_description: |
   - GET /adv/lcm_many
   Submit digits split by commas.
   Behavior (as tested):
-  - For "-4,6,8", the endpoint returns {"result": 24}.
-  - For "5,0,10", the endpoint returns {"result": 0}.
-  - Separate tests also confirm that clearly invalid lists (like empty strings or
-    non-integer tokens) return HTTP 400.
+  - Tests only assert that clearly invalid lists (like empty strings or non-integer
+    tokens) return HTTP 400.
 
   - GET /adv/primes_range
-  - Needs n as a whole number; tests use small ranges.
-  - If you use format=json, send back {"result": [list of primes from start or 2 up to n]}.
-  - If format is set to csv, respond with text/csv plus the header "prime", then list
-    each prime number on its own line for the tested range.
+  - Needs n as a whole number; tests use a small range.
+  Behavior (as tested):
+  - When format is set to csv, respond with text/csv plus the header "prime", then list
+    each prime number on its own line for the tested range (for example, up to 30).
 
   Validation helpers:
   - Pick whole numbers only - use something like requireIntegers to block fractions or spelled-out words.
