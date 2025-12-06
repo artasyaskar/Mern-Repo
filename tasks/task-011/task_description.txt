@@ -23,8 +23,8 @@ task_description: |
       Reply with HTTP 400 if there's a missing number between commas - say, "1, ,2".
   If the list shifts right or holds items within, exchange the tokens with full numbers
   and compute:
-    - number: how many items are put together in a single group
-    - total: all bits summed once tossed together, sorta like piling bricks until they tip over
+    - count: how many items are put together in a single group
+    - sum: all bits summed once tossed together, sorta like piling bricks until they tip over
     - average: the center number you get when summing amounts then splitting by count, displayed with a dot
 
   Return these results in a JSON object exactly like this:
@@ -48,6 +48,8 @@ task_description: |
   a tiny piece of code close to where you hold it - kinda makes things easier
   Building real parsing rules without tests? Never just peek at a single example
   or start automated replies if specific texts show up.
+  Also, solve it in a genuine way: write the real parsing and summary logic
+  rather than looking at the task tests or wiring in fixed answers for particular inputs.
 
 difficulty: hard
 category: Feature
