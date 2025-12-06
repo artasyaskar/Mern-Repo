@@ -1,9 +1,9 @@
 task_description: |
-  Task: Keep track of digits inside shifting blocks of info 
+  Task: See digits shift as pieces of info swap out
 
   Instructions:
-  Create a new feature - this one works out moving averages from number groups inside a collection
-  window dimensions. Go for precise answers using clear thinking.
+  Create a new gadget - this thing finds moving averages by working through number groups in a sequence
+  Work out how big the window is. Choose precise answers by breaking it down slowly.
 
   Requirements (as tested):
 
@@ -11,39 +11,40 @@ task_description: |
     Query parameters:
     - nums:
       description: >
-        A list of full numbers with commas between them (like "1,2,3,4,5").
-        Checks work with tiny number sets like "1,2,3,4,5".
+        A list of full numbers split by commas - like 1,2,3,4,5.
+        Trials done with tiny sets - like 1, then 2, followed by 3, or maybe 4 before 5.
     - k:
       description: >
-        The window size is a whole number. For tests, folks often pick tiny numbers - like 3 instead.
+        The window size stands for a whole number. Yet during tests, folks often pick smaller values - like 3.
 
-  Verification steps (based on testing):
+  Try it out with sample info - see what happens
   - Return HTTP 400 if:
     - nums is empty while k is given (e.g. nums="", k=2).
-    - k's less than 2, like when nums is "1,2,3" and k equals 1.
-    - k's bigger than how many numbers are in nums - like if nums is "1,2" and k equals 3.
+    - k's less than 2 - like when nums is "1,2,3" but k equals 1.
+    - k's bigger than how many numbers are in nums - like if nums is "1,2" but k equals 3.
 
-  Calculation methods (based on tests):
-  Tackle every stretch of k digits in nums like it's a single frame.
-  - Work out the value per window:
-    - mean: arithmetic average
-      varying how it's split - uses k minus one down below instead of total count
-    - stddev: found by taking the square root of variance
-  - Like this: if nums="1,2,3,4,5" while k=3 then groups are [1,2,3], also [2,3,4], plus [3,4,5]
-    yield stands at [2.0, 3.0, 4.0], meanwhile variances or stddevs sit around 1.0.
+  Figuring stuff out – shaped through test attempts
+  Tackle every k-digit piece in nums like it's a single moment.
+  Work out the price for every window
+  - mean: arithmetic average
+    varying how it divides - applies k minus one down below instead of the whole figure
+  - stddev: found by taking the square root of variance
+  - Like this: say nums="1,2,3,4,5" while k=3, then groups are [1,2,3], after that [2,3,4], then [3,4,5]
+    yield stays around [2.0, 3.0, 4.0], meanwhile variance sticks near 1.0.
   - The response JSON structure is:
     {
-      m0, m1, along with others
-      v0, v1, along with others like them
+      m0, then again m1, along with a bit extra
+      v0 with v1, along some others like them
       [s0, s1, ...]
     }
 
   Notes:
-  - Focus mostly on server/routes/advanced.js - also peek into server/services/calculator.js
-  - Go with a straightforward O(nk) method; better versions are fine, yet not needed
+  - Mostly peek at server/routes/advanced.js – also glance over server/services/calculator.js while you're there
+  - Go with a simple O(nk) method; fancier options exist, yet they’re not needed
     required by tests.
 
 difficulty: medium
 category: Feature
-tags: [node, express, statistics]
+tags: [node, express, stats]
 parser_name: pytest
+
