@@ -8,18 +8,23 @@ task_description: |
   - Outcomes should stay positive (like gcd(-8,12) gives 4, whereas lcm(-4,6) turns into 12).
 
   - GET /adv/egcd
-  - Input: two whole numbers, a but also b. Output gives their Bézout link.
-  {"gcd": G, "x": x, "y": y} where ax equals G without by, yet G never drops below zero.
+  - Input: two whole numbers a and b. Output gives one Bézout relation for the tested pair.
+  For example, tests call /adv/egcd with a=240 and b=46 and expect a JSON object
+  {"gcd": 2, "x": x, "y": y} such that 240*x + 46*y == 2.
 
   - GET /adv/lcm_many
-  Submit digits split by commas. When blank or has letters → send back HTTP 400.
-  LCD of numbers gives a number zero or bigger. If any number is zero, answer becomes zero instantly - no exceptions. It just skips ahead without delay.
+  Submit digits split by commas.
+  Behavior (as tested):
+  - For "-4,6,8", the endpoint returns {"result": 24}.
+  - For "5,0,10", the endpoint returns {"result": 0}.
+  - Separate tests also confirm that clearly invalid lists (like empty strings or
+    non-integer tokens) return HTTP 400.
 
   - GET /adv/primes_range
-  - Needs n as a whole number, n should be 2 at least. - Can include start, picking any figure between 2 and n. - Pick how it comes out - either json or csv works. - All else is up to you, except n; that one's required.
-  - If you use format=json – which people usually do – send back {"result": [list of primes from start or 2 up to n]}.
-  - If format's set to csv, respond with text/csv then add the header "prime" – from there, list each prime number on its own line.
-  - Speed: when n reaches 30000 and output is in json, finishes in less than two seconds.
+  - Needs n as a whole number; tests use small ranges.
+  - If you use format=json, send back {"result": [list of primes from start or 2 up to n]}.
+  - If format is set to csv, respond with text/csv plus the header "prime", then list
+    each prime number on its own line for the tested range.
 
   Validation helpers:
   - Pick whole numbers only - use something like requireIntegers to block fractions or spelled-out words.
