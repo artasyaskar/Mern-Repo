@@ -1,53 +1,53 @@
 task_description: |
-  Task: Take a short row of whole numbers and describe how they add up.
+  Task: Go down a quick line of full numbers. Check what shows up when you connect them using sums.
 
   Instructions:
-  This task adds one more small endpoint. It reads a comma-separated list of
-  integers from the query string, makes sure the list is clean, then reports
-  back a few simple totals.
+  This role adds a small boost - yanking items from a comma-separated list apart
+  Pulled numbers from the source, verified each piece fit right, then sent them back out
+  give it another shot using simple number problems instead.
 
   Requirements (as tested):
 
   - GET /adv/sum_stats
     Query parameters:
-      - nums: a list of integers separated by commas, for example
-        "1,2,3,4" or "-2,0,5".
+    - nums: a list of full numbers separated by commas, such as
+      "1,2,3,4" or "-2,0,5".
 
-    Behavior (as tested):
-      - If nums is missing or an empty string, respond with HTTP 400.
-      - Split nums by commas. After trimming spaces around each part:
-          - Each token must be a valid integer string (optional leading minus
-            sign, then digits only).
-          - If you see a token that is empty, only spaces, contains letters,
-            or contains a decimal point (such as "x", "3.5", "" between two
-            commas, or "1, ,2"), respond with HTTP 400.
-      - When the list is valid and non-empty, convert the tokens to integers
-        and compute:
-          - count: how many numbers are in the list
-          - sum: the total of all the numbers
-          - average: the arithmetic mean as a floating‑point number
+  Behavior (as tested):
+  If nums is missing or blank, return HTTP 400. If not, just move on.
+  Break up digits with commas. After clearing out blank spots around each part,
+    - Each sign must mean a real number (might begin with a negative if necessary)
+      number right after sign.
+    - If you see a code that’s empty, filled with only spaces, or odd symbols,
+      or contains a decimal point (such as "x", "3.5", "" between two
+      Reply with HTTP 400 if you spot gaps between commas like "1, ,2".
+  If the list runs right or holds items, flip the tokens to full numbers
+  and compute:
+    - count: how many things are in the bunch
+    - overall: how things add up once you toss all amounts together, sorta like piling bricks until there's no space left
+    - average: the center value you get when you sum values then split by their count, displayed with a dot
 
-        Return these in a JSON object with this exact shape:
+  {"error": "No input provided to rewrite."}
 
-          {"count": number, "sum": number, "average": number}
+  {'count': 5, 'but': 3, 'then': 7}
 
-      - Tests cover a couple of small examples:
-          - A basic positive list like "1,2,3,4".
-          - A list that mixes negative and non-negative values, such as
-            "-2,0,5".
-          - A single number like "10".
-          - Whitespace around values that still form valid integers, such as
-            " 1, 2 ,3 ", which should be accepted.
-          - Clearly invalid inputs as described above, which should return
-            HTTP 400.
+  - These checks cover just a handful of small scenarios:
+    1 shows up – right away 2 comes along, soon after 3 jumps in; meanwhile, 4 slips through.
+    Numbers less than zero together with ones greater than zero, such as
+    "-2,0,5".
+    A lone digit - only this one - is ten.
+    - Areas close to numbers that don't break into parts, such as
+      Begin at 1, then move to 2; once done, add 3 - that’s the way it clicks.
+    - Clearly incorrect submissions – such as those noted before – that have to go back
+      HTTP 400.
 
   Notes:
-  A simple approach is to add the route in server/routes/advanced.js, keeping
-  any tiny helper logic close to your other calculator functions. The goal is
-  to write the real parsing and summary logic, not to peek at the task tests
-  or hardcode responses for specific inputs.
+  A hassle-free pick? Tuck it into server/routes/advanced.js for the time being
+  a tiny piece of code by your numbers - kind of gives a hand
+  creating real parsing rules while skipping test examples – don’t peek at cases ever
+  or start automatic replies if specific messages show up.
 
-difficulty: easy
+difficulty: hard
 category: Feature
 tags: [node, express, stats]
 parser_name: pytest
