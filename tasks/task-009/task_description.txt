@@ -1,9 +1,9 @@
 task_description: |
-  Task: See digits shift as pieces of info swap out
+  Watch numbers change when bits of data switch places
 
   Instructions:
-  Create a new gadget - this thing finds moving averages by working through number groups in a sequence
-  Work out how big the window is. Choose precise answers by breaking it down slowly.
+  Create a fresh tool - this one tracks trends by crunching digits step by step through a line of values
+  Figure out the size of the window. Pick accurate options by going step by step.
 
   Requirements (as tested):
 
@@ -11,40 +11,39 @@ task_description: |
     Query parameters:
     - nums:
       description: >
-        A list of full numbers split by commas - like 1,2,3,4,5.
-        Trials done with tiny sets - like 1, then 2, followed by 3, or maybe 4 before 5.
+        A sequence of whole digits separated using commas - such as 3,7,2,9,4.
+        Trials used small groups - just one at first, after that two, next up three, perhaps four ahead of five.
     - k:
       description: >
-        The window size stands for a whole number. Yet during tests, folks often pick smaller values - like 3.
+        The window size means a full number. But when testing, people usually go for tinier options - say, 3.
 
-  Try it out with sample info - see what happens
+  Give it a go using example details - find out how it works
   - Return HTTP 400 if:
     - nums is empty while k is given (e.g. nums="", k=2).
-    - k's less than 2 - like when nums is "1,2,3" but k equals 1.
-    - k's bigger than how many numbers are in nums - like if nums is "1,2" but k equals 3.
+    - k smaller than 2 – say nums is "1,2,3", yet k’s just 0.
+    - k is larger than the count of numbers in nums - say nums has 1,2 but k is 3.
 
-  Figuring stuff out – shaped through test attempts
-  Tackle every k-digit piece in nums like it's a single moment.
+  Finding answers by trying things out - built from trial runs
+  Tackle each k-digit chunk in nums as if it’s one instant - using different words every time, switching up how things sound, keeping it short, tossing out fluff, making sure no line drags on.
   Work out the price for every window
   - mean: arithmetic average
-    varying how it divides - applies k minus one down below instead of the whole figure
-  - stddev: found by taking the square root of variance
-  - Like this: say nums="1,2,3,4,5" while k=3, then groups are [1,2,3], after that [2,3,4], then [3,4,5]
-    yield stays around [2.0, 3.0, 4.0], meanwhile variance sticks near 1.0.
+    varying its split method – uses k minus one underneath rather than the full number
+  - stddev: calculated by getting the square root of variance
+  - For example: if nums equals "1,2,3,4,5" and k is 3, you get chunks like [1,2,3], next comes [2,3,4], followed by [3,4,5]
+    yield holds steady at about [2.0, 3.0, 4.0], while variance remains close to 1.0.
   - The response JSON structure is:
     {
-      m0, then again m1, along with a bit extra
-      v0 with v1, along some others like them
+      m0 – though really m1 – plus just a touch more
+      v0 together with v1, plus a few similar ones
       [s0, s1, ...]
     }
 
   Notes:
-  - Mostly peek at server/routes/advanced.js – also glance over server/services/calculator.js while you're there
-  - Go with a simple O(nk) method; fancier options exist, yet they’re not needed
+  - Mainly check out server/routes/advanced.js – while you’re at it, take a quick look at server/services/calculator.js
+  - Stick to an easy O(nk) approach; fancier ones are out there, but you won't need 'em
     required by tests.
 
 difficulty: medium
 category: Feature
 tags: [node, express, stats]
 parser_name: pytest
-
