@@ -1,50 +1,50 @@
 task_description: |
-  Task: Read a short list of integers from the query string and report a few
+  Pick a few digits from the sheet - after that, explain where they come from
   simple summary numbers.
 
-  This task adds one small endpoint: it accepts a comma-separated list of
-  integers, checks that the list is well-formed, then returns the minimum,
-  maximum, average value, and the range.
+  This role adds a small change: it grabs comma-split items either this way or that - short yet clear, skipping repeats or anything stiff
+  figures, checks if stuff matches, then returns the lowest
+  top value right away, mid level comes clear meanwhile shifting across numbers.
 
   Requirements (as tested):
 
   - GET /adv/center_range
     Query parameters:
-      - nums: comma-separated integers, for example "1,2,3,4" or "-5,0,5".
+    - nums: a list of numbers separated by commas, such as "1,2,3,4" or "-5,0,5".
 
-    Behavior (as tested):
-      - If nums is missing or an empty string, respond with HTTP 400.
-      - Split nums by commas. After trimming spaces around each piece:
-          - Every token must be a valid integer string (optional leading minus
-            sign, then digits only).
-          - If you see a token that is empty, only spaces, contains letters,
-            or contains a decimal point (such as "x", "3.5", "" between two
-            commas, or "1, ,2"), respond with HTTP 400.
-      - When the list is valid and non-empty, convert the tokens to integers
-        and compute:
-          - min: the smallest integer in the list
-          - max: the largest integer in the list
-          - mean: the arithmetic mean as a floating-point number
-          - range: max - min
+  Behavior (as tested):
+  If nums is missing or empty, return HTTP 400.
+  - Split digits into chunks with commas. After taking out blank spots around each set:
+    Every token must be a full number written in words - might start with a negative sign. One at a time, each should stand clear on its own. Leave out any that have periods or lines through them. Just plain old integers, from small to big, no tricks
+    mark - then digits only.
+  - If you see a token that’s empty, filled with gaps, or packed with strange signs,
+    or contains a decimal point (such as "x", "3.5", "" between two
+    put commas like "1, ,2", so return HTTP 400.
+  If the list’s still got stuff in it, change each token to a number by flipping
+  and compute:
+    the smallest value spotted within that set
+    max: the highest full number spotted when checking that set
+    - average: total split by how many items, given as a number with decimals
+    - range: top value minus bottom one
 
-        Return these in a JSON object with this exact shape:
+  {"error": "No input provided to rewrite."}
 
-          {"min": number, "max": number, "mean": number, "range": number}
+  {"min": number, "so": number, "mean": number, "range": number}
 
-      - Tests cover a few simple cases:
-          - A basic positive list like "1,2,3,4".
-          - A list with negative values like "-5,0,5".
-          - A single-element list like "42".
-          - Whitespace around numbers that still form valid integers, such as
-            " 1, 2 ,3 ", which should be accepted.
-          - Clearly invalid inputs as described above, which should return
-            HTTP 400.
+  - Looks after only a few simple cases
+    1 arrives first, soon after 2 pops in. Next thing you know, 3 turns up - right behind it, 4 tags along.
+    -5, then a zero pops up - right behind it, 5 steps in.
+    A lone clothing item, like "42".
+  - Areas close to numbers behaving just like whole figures, say
+    Start with one, then two comes next, while three follows - this is how progress happens.
+  - Incorrect details from earlier, which should go back
+    HTTP 400.
 
   Notes:
-  - A straightforward approach is to add the route in server/routes/advanced.js
-    and keep any small helper logic alongside the other calculator utilities.
-  - You do not need to optimize for large inputs; the tests only use short
-    lists.
+  A hassle-free method? Try placing it inside server/routes/advanced.js
+  Keep small tools by your math gear.
+  You don’t need to manage loads of data - tests use small chunks now. Instead of huge stacks, quick mini-pulses work faster. Little slices fit right into the rhythm naturally. Brief inputs keep progress smooth without snags
+  lists.
 
 difficulty: hard
 category: Feature
