@@ -24,8 +24,6 @@ task_description: |
   - If the list is running yet keeps items, switch the bits into whole numbers
     flip 'em over once more.
 
-  {"error": "No input provided to rewrite."}
-
   {"reversed": [integers]}
 
   - Checks pass through several basic scenarios:
