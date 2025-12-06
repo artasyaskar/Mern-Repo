@@ -1,48 +1,48 @@
 task_description: |
-  Task: Set up three check points - each one checks inputs and, when appropriate, returns
-  HTTP 400 on bad data.
+  Task: Set up three checkpoints - each verifies inputs, returning results if needed - or skips otherwise - but only when conditions match - no extra steps - just basic validation - at every stage - one after another - not all at once - each works alone - never together 
+  Got HTTP 400 when data’s off.
 
   Instructions:
-  Launch or update endpoints so they perform simple validation and, where covered by tests,
-  basic computations. Aim for direct, practical logic.
+  Start or refresh endpoints to handle basic checks - when tested, include those cases
+  simple math tasks. Go for clear, hands-on reasoning.
 
   Requirements (as tested):
 
   1. GET /adv/prime_factors
-  Query: n
-  Behavior (as tested):
-  - Tests call this endpoint with invalid values like n=1 and a non-numeric string, and
-    expect HTTP 400.
-  - No tests assert specific prime-factor outputs; you only need to ensure these invalid
-    inputs return 400.
+     Query: n
+     Behavior (as tested):
+     - Tests hit this endpoint using bad inputs - say, n=1 or some random text instead of numbers,
+       expect HTTP 400.
+     - None check exact prime factors; just confirm these don't pass
+       inputs return 400.
 
   2. GET /adv/rolling_median
-  Query: nums, k
-  Behavior (as tested):
-  - Tests send clearly invalid inputs and expect HTTP 400 in these cases:
-    - nums="1,2,3", k=2 (even k)
-    - nums="", k=1 (empty nums)
-  - No tests assert any particular successful median values.
+     Query: nums, k
+     Behavior (as tested):
+     - Checks use obviously wrong data, yet still anticipate a 400 error response in such situations
+     - List is 1,2,3 with k set to 2 - an even number
+     - nums="", k=1 (empty nums)
+       No checks confirm specific median outcomes actually worked.
 
   3. GET /adv/unique_mode
-  Query: nums
-  Behavior (as tested):
-  - If one number appears more often than the rest in a simple list like "1,2,2,3",
-    the endpoint should return {"result": 2} with HTTP 200.
-  - If there is a tie for highest frequency in a simple case like "2,2,3,3", the
-    endpoint should return HTTP 400.
-  - A single entry such as nums="42" should return HTTP 200 with {"result": 42}.
-  - One malformed list example, such as nums="1,2,3.5", must return HTTP 400; broader
-    validation is not asserted by tests.
+     Query: nums
+     Behavior (as tested):
+     - When a digit shows up more times than others in a basic sequence such as "1,2,2,3",
+       the endpoint oughta give back {"result": 2} plus a HTTP 200 code.
+       If two numbers appear same times - like 2,2,3,3 - the
+       endpoint oughta give back HTTP 400.
+       A single input like nums="42" triggers HTTP 200 plus delivers {"result": 42}.
+     - A wrong list format like nums="1,2,3.5" should give back HTTP 400; more general
+       Checks don't confirm validation.
 
-  Things you may need to adjust:
+  Stuff you might have to tweak:
   - server/middleware/validate.js
   - server/routes/advanced.js
   - server/services/calculator.js
 
   Notes on tests:
-  - Tests use a small, fixed set of examples for each endpoint.
-  - Focus on making the logic clear and correct for these representative cases.
+  - Checks run on just a few preset cases per endpoint.
+  - Work on clearing up the logic so it makes sense for examples like these.
 
 difficulty: medium
 category: Feature
