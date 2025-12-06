@@ -1,0 +1,50 @@
+task_description: |
+  Task: Read a short list of whole numbers and return them in reverse order.
+
+  Instructions:
+  This task adds one small endpoint. It reads a comma-separated list of
+  integers from the query string, checks that the list is clean, then returns
+  the same numbers in the opposite order.
+
+  Requirements (as tested):
+
+  - GET /adv/reverse_list
+    Query parameters:
+      - nums: a list of integers separated by commas, for example
+        "1,2,3,4" or "-2,0,5".
+
+    Behavior (as tested):
+      - If nums is missing or an empty string, respond with HTTP 400.
+      - Split nums by commas. After trimming spaces around each part:
+          - Each token must be a valid integer string (optional leading minus
+            sign, then digits only).
+          - If you see a token that is empty, only spaces, contains letters,
+            or contains a decimal point (such as "x", "3.5", "" between two
+            commas, or "1, ,2"), respond with HTTP 400.
+      - When the list is valid and non-empty, convert the tokens to integers
+        and return them in reverse order.
+
+        Return these in a JSON object with this exact shape:
+
+          {"reversed": [integers]}
+
+      - Tests cover a few simple cases:
+          - A basic positive list like "1,2,3,4".
+          - A list that mixes negative and non-negative values, such as
+            "-2,0,5".
+          - A single number like "7".
+          - Whitespace around values that still form valid integers, such as
+            " 1, 2 ,3 ", which should be accepted.
+          - Clearly invalid inputs as described above, which should return
+            HTTP 400.
+
+  Notes:
+  A simple approach is to add the route in server/routes/advanced.js, keeping
+  any tiny helper logic close to your other calculator functions. The goal is
+  to write the real parsing and reversal logic, not to peek at the task tests
+  or hardcode responses for specific inputs.
+
+difficulty: hard
+category: Feature
+tags: [node, express, stats]
+parser_name: pytest
