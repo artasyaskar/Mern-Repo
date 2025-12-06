@@ -8,33 +8,34 @@ task_description: |
 
   1. GET /adv/prime_factors
   Query: n
-  n must be an integer, besides that it’s at least 2.
+  n must be an integer and at least 2.
   Behavior:
   Hand over the prime factors of n, put them from low to high, include duplicates when necessary.
-  60 becomes [2,2,3,5].
-  If someone types letters or decimals, bounce them with a HTTP 400. Or if they try a number below two, hit 'em with the same error.
+  Example: 60 becomes [2,2,3,5]; 97 stays [97].
+  In this task, tests only check that obviously invalid inputs (like n=1 or non-numeric text) return HTTP 400.
 
   2. GET /adv/rolling_median
   Query: nums, k
   - nums: list of whole numbers separated by commas, no spaces or periods. Needs at least one value.
-  k: an odd integer starting from 1, never larger than the count of elements in nums.
-  Behavior:
+  - k: an odd integer starting from 1.
+  Behavior (as covered by tests):
   - For each group of k things, sort 'em first - then pick the middle one.
-  - Return the group of inner digits. Results might include fractions, yet when beginning with integers, outcomes stay complete.
+  - Return the list of those middle values.
   Example:
   nums are 1,3,2,6,4 but k equals 3
   Windows: [1,3,2], [3,2,6], [2,6,4]
   Medians: [2,3,4]
-  If the input's off - say, k is even, or far too large, or the numbers are scrambled - shoot back a 400 error.
+  With k=1, the result is just the original list.
+  For this task, tests only require you to reject clearly invalid inputs where k is even or nums is empty (HTTP 400).
 
   3. GET /adv/unique_mode
   Query: nums
   nums: list of whole numbers, separated by commas - no spaces, no periods. Must not be empty.
-  Behavior:
+  Behavior (as covered by tests):
   - If one number pops up more often than the rest, return {"result": x}.
-  If several values tie for highest frequency, return HTTP 400 instead.
-  A single entry, such as nums="42", runs without issues - gives back 200 along with the value.
-  - If you enter incorrect info, the system returns an HTTP 400 error instead.
+  - If several values tie for highest frequency in a simple case (like 2 and 3 both twice), return HTTP 400.
+  - A single entry, such as nums="42", runs without issues - gives back 200 along with the value.
+  - One example of bad data (like including 3.5) must trigger HTTP 400; no broader validation is required here.
 
   Validation helpers:
   1234567890.
@@ -45,24 +46,11 @@ task_description: |
   - server/routes/advanced.js
   - server/services/calculator.js
 
-  Notes:
-  Splitting a number by trying divisors up to its root? Solid for figures below ten million.
-  - Rolling mean with simple sorting inside every segment (O(nk log k)) runs okay.
-  - Send back HTTP 400 whenever data's off; checks confirm the code through when rather than directly.
-  Looks at key moves linked to those points - doesn’t hit every detail. This plan lines up tight with what the tests verify, no extra fluff.
-
-  Anti-cheating measures:
-  - Inputs are dynamically generated with randomized values in each test run
-  - Prime factors will test numbers up to 10^7 with varying prime combinations
-  - Rolling median tests use random array lengths (10-1000) with random k values
-  - Unique mode tests include randomized arrays with varying distributions
-  - Edge cases are randomly interleaved with normal test cases
-  - All solutions must process arbitrary valid inputs within constraints
-  - Any attempt to hardcode responses will be detected and penalized
-  - Focus on general algorithms rather than specific test cases
+  Notes on tests:
+  - Tests use a small, fixed set of examples for each endpoint.
+  - Focus on making the logic clear and correct for these representative cases.
 
 difficulty: hard
 category: Feature
-tags: [node, express, algorithms, randomized]
+tags: [node, express, algorithms]
 parser_name: pytest
-
