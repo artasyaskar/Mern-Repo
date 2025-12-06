@@ -1,49 +1,49 @@
 task_description: |
-  Task: Follow numbers within moving chunks of data
+  Task: Keep track of digits inside shifting blocks of info 
 
   Instructions:
-    Add a fresh endpoint that calculates rolling statistics from number lists using a set
-    window size. Aim for accurate results with straightforward logic.
+  Create a new feature - this one works out moving averages from number groups inside a collection
+  window dimensions. Go for precise answers using clear thinking.
 
   Requirements (as tested):
 
-    - GET /adv/rolling_stats
-      Query parameters:
-        - nums:
-            description: >
-              A sequence of whole numbers separated by commas (e.g. "1,2,3,4,5").
-              Tests use small integer lists such as "1,2,3,4,5".
-        - k:
-            description: >
-              The window size (an integer). Tests use small k values such as k=3.
+  - GET /adv/rolling_stats
+    Query parameters:
+    - nums:
+      description: >
+        A list of full numbers with commas between them (like "1,2,3,4,5").
+        Checks work with tiny number sets like "1,2,3,4,5".
+    - k:
+      description: >
+        The window size is a whole number. For tests, folks often pick tiny numbers - like 3 instead.
 
-  Validation checks (as tested):
-    - Return HTTP 400 if:
-      - nums is empty while k is given (e.g. nums="", k=2).
-      - k is smaller than 2 (e.g. nums="1,2,3", k=1).
-      - k is larger than the number of values in nums (e.g. nums="1,2", k=3).
+  Verification steps (based on testing):
+  - Return HTTP 400 if:
+    - nums is empty while k is given (e.g. nums="", k=2).
+    - k's less than 2, like when nums is "1,2,3" and k equals 1.
+    - k's bigger than how many numbers are in nums - like if nums is "1,2" and k equals 3.
 
-  Computation rules (as tested):
-    - Treat each contiguous group of k numbers in nums as a window.
-    - For each window, calculate:
-      - mean: arithmetic average
-      - variance: sample variance with denominator (k - 1)
-      - stddev: square root of variance
-    - For example, with nums="1,2,3,4,5" and k=3 the windows [1,2,3], [2,3,4], [3,4,5]
-      yield means [2.0, 3.0, 4.0] and variances/stddevs equal to 1.0.
-    - The response JSON structure is:
-      {
-        "means": [m0, m1, ...],
-        "variances": [v0, v1, ...],
-        "stddevs": [s0, s1, ...]
-      }
+  Calculation methods (based on tests):
+  Tackle every stretch of k digits in nums like it's a single frame.
+  - Work out the value per window:
+    - mean: arithmetic average
+      varying how it's split - uses k minus one down below instead of total count
+    - stddev: found by taking the square root of variance
+  - Like this: if nums="1,2,3,4,5" while k=3 then groups are [1,2,3], also [2,3,4], plus [3,4,5]
+    yield stands at [2.0, 3.0, 4.0], meanwhile variances or stddevs sit around 1.0.
+  - The response JSON structure is:
+    {
+      m0, m1, along with others
+      v0, v1, along with others like them
+      [s0, s1, ...]
+    }
 
   Notes:
-    - Mainly look at server/routes/advanced.js but also check server/services/calculator.js
-    - Stick to a clear O(nk) implementation; more optimized approaches are welcome but not
-      required by tests.
+  - Focus mostly on server/routes/advanced.js - also peek into server/services/calculator.js
+  - Go with a straightforward O(nk) method; better versions are fine, yet not needed
+    required by tests.
 
-  difficulty: medium
-  category: Feature
-  tags: [node, express, statistics]
-  parser_name: pytest
+difficulty: medium
+category: Feature
+tags: [node, express, statistics]
+parser_name: pytest
