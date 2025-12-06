@@ -1,13 +1,13 @@
 task_description: |
-  Task: Create three tracking links - use tight digit-check rules. Stick to basic steps, no extras; go by test examples exactly.
+  Task: Create three tracking links. Stick to basic steps, and follow the test examples exactly.
   Instructions:
   Set up fresh endpoints using tight checks. Go for clear results - no assumptions here. Works on lists, whether dozens or thousands, runs at a solid speed.
   Requirements (as tested):
   - GET /adv/percentile
   Query: nums, p
-  - nums: a list of whole numbers split by commas, no spaces, no fractions or breaks.
-  p: any figure between zero and one hundred, never less, never more.
-  Behavior:
+  - nums: in tests, this is a comma-separated list of whole numbers such as "1,2,3,4".
+  p: in tests, this is an integer percentile between 0 and 100.
+  Behavior (as tested):
   Look at the numbered options. Pick a spot using this method: grab p, times it by n, split by 100, then push it up to next whole number - unless it’s already one. Still, don’t let it drop below 1 or jump past n. If p is zero, pick number one straight away.
   Choose the number you land on as you count up from one, and return it in a JSON object:
   {"result": value}.
@@ -16,16 +16,16 @@ task_description: |
   - GET /adv/convolve
   Query: a, b
   a b.
-  Behavior:
-  - Work on every math part separately – don't loop or skip ahead
-  c[k] comes from multiplying a[i] with b[k−i], adding those values where i fits, as k runs from 0 up to len(a) combined with len(b), minus one.
+  Behavior (as tested):
+  - Treat a and b as lists of integers given as comma-separated strings.
+  - c[k] comes from multiplying a[i] with b[k−i], adding those values where i fits, as k runs from 0 up to len(a) combined with len(b), minus one.
   - Here's the deal: if a is 1,2,3 but b stands at 4,5 → c becomes [4,13,22,15].
-  - The endpoint should return that list as {"result": [4,13,22,15]} and similar for other inputs.
+  - The endpoint should return that list as {"result": [4,13,22,15]}.
 
   - GET /adv/mmm
   Query: nums
-  - nums: a list of whole numbers separated by commas, no spaces or decimals (must have at least one digit).
-  Behavior:
+  - nums: in tests, this is a comma-separated list of whole numbers.
+  Behavior (as tested):
   {"mean": m, "median": d, "mode": o}.
   mean is all stuff added up, then shared equally among each part. median? line up every number from low to high - take the middle one straight out.
   The mode’s the number that shows up most - tests are made so there's no tie.
@@ -37,6 +37,7 @@ task_description: |
 
   Notes:
   - Use simple methods to finish fast - sorting takes O(n log n) time for percentiles; chats run in O(nm).
+  - Tests focus on the concrete examples described above rather than every possible invalid input.
 
   Anti-cheating guidance:
   - Make sure your code works fine even when stuff changes - inputs aren't stuck on one example; tests swap them out.
