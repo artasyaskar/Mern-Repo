@@ -2,42 +2,42 @@ task_description: |
   Task: Summarize a small list of integers with simple center and spread metrics
 
   Instructions:
-  Create a new endpoint which grabs a brief sequence of integers from the request
-  string checks each item, after that sends back simple stats. Go with the test
-  cases like these - just back the real examples from the tests. use whatever fits, skip the rest.
+  Start a fresh endpoint that pulls a short string of numbers when someone calls in
+  Try it out - it goes through every piece step by step, then shows clear numbers. See how it works
+  stuff like this - zero in on actual results. aim for what works, leave out the rest.
 
   Requirements (as tested):
 
   - GET /adv/center_range
     Query parameters:
-    - nums: numbers split by commas, like "1,2,3,4" or "-5,0,5"
+    - nums: a list of numbers separated by commas, such as -5,0,5 or 1,2,3,4
 
   Behavior (as tested):
-  - Turn numbers into a group of whole digits. In case no nums exist or they’re blank,
-    or holds something that isn't a whole number, like "x" or "3.5"
-    extra commas or odd gaps that aren't part of a real number reply
-    with HTTP 400.
+  Write out numbers as full words. In spots where digits are absent or spaces appear,
+  or keeps a value that’s not a full number - say, x instead of 4, or perhaps 3.5 rather than sticking to 3
+  extra commas, weird spaces - these don’t belong in a proper number response
+  with HTTP 400.
 
-  - When the input works, figure out:
-    - min: the tiniest number found in the group (whole number)
-    - biggest number found in the set (whole number)
-    - mean: typical value shown as a decimal number
-    - range: highest minus lowest
+  - As it begins, check out what’s happening within:
+  - min: smallest value found in the set (full number)
+  top count spotted among the team - just one full digit
+  - usual number: standard digit display with values following a decimal point
+  - range: highest outcome less the lowest
 
   The response JSON shape is:
-  {"min": number, "but": number, "so": number, "since": number}
+  {"min": number, "however": number, "therefore": number, "because": number}
 
-  - Checks stick to short number sets, sometimes tossing in negatives but
-    one-item lists. No need to worry about huge data sizes.
+  - They’ll follow small groups of numbers, sometimes slipping in negatives here or there
+  Take it step by step. Avoid loads of details piling up.
 
   Notes:
-  - Stick to a clear, predictable setup - skip anything random or
-    timing tricks.
-    A logical spot for the main code could be server/services/calculator.js,
-    routing plus basic query handling inside server/routes/advanced.js - use it only if you'd rather
-    You can grab helpers from server/utils/array.js too - just pull what you need.
-  - You can check things right inside the route - or use a tiny helper function - just make sure it’s tested
-    Look at the actions mentioned earlier.
+  - Focus on core stuff - leave out surprises
+  timing tricks.
+  A natural choice for the core script might go right inside server/services/calculator.js
+  head over to server/routes/advanced.js for routing plus simple queries - pick this one if you usually start here
+  You can take the tools from server/utils/array.js either – if it suits your needs, just do it.
+  You can look up stuff directly in the path, but try a small helper function - just double-check how it works
+  Check out the steps listed before.
 
 difficulty: hard
 category: Feature
