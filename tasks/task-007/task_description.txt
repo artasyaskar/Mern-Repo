@@ -26,9 +26,10 @@ task_description: |
   Query: nums
   - nums: in tests, this is a comma-separated list of whole numbers.
   Behavior (as tested):
-  {"mean": m, "median": d, "mode": o}.
-  mean is all stuff added up, then shared equally among each part. median? line up every number from low to high - take the middle one straight out.
-  The mode’s the number that shows up most - tests are made so there's no tie.
+  - The endpoint returns a JSON object of the form {"mean": m, "median": d, "mode": o}.
+  - mean is the arithmetic average of the list.
+  - median is the middle value (for the tested list, 4.5).
+  - mode is the most frequent value (for the tested list, 4).
 
   Stuff you might have to tweak:
   - server/middleware/validate.js

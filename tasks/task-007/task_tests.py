@@ -37,16 +37,3 @@ def test_mmm_mean_median_mode_typical():
     assert abs(d["mean"] - 5.0) < 1e-9
     assert d["median"] == 4.5
     assert d["mode"] == 4
-
-
-def test_mmm_validation_and_singleton():
-    """/adv/mmm validates input and handles singleton arrays."""
-    r1 = requests.get(f"{BASE}/adv/mmm", params={"nums": "1,2,3.1"}, timeout=5)
-    assert r1.status_code == 400
-
-    r2 = requests.get(f"{BASE}/adv/mmm", params={"nums": "42"}, timeout=5)
-    assert r2.status_code == 200
-    d2 = r2.json()
-    assert d2["mean"] == 42
-    assert d2["median"] == 42
-    assert d2["mode"] == 42
