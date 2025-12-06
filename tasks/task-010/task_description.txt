@@ -1,45 +1,52 @@
 task_description: |
-  Find the middle number, after that work out how far apart the numbers usually are
+  Task: Read a short list of integers from the query string and report a few
+  simple summary numbers.
 
-  Instructions:
-  Begin again - grab a tiny sequence of numbers whenever someone signs in
-  Give it a go - this one walks you through slowly, so things make sense afterward. Check how that feels
-  things like these – focus tightly on real outcomes. go after what actually clicks, skip everything else.
+  This task adds one small endpoint: it accepts a comma-separated list of
+  integers, checks that the list is well-formed, then returns the minimum,
+  maximum, average value, and the range.
 
   Requirements (as tested):
 
   - GET /adv/center_range
     Query parameters:
-    - nums: a collection of digits split by commas, like -5,0,5 or 1,2,3,4
+      - nums: comma-separated integers, for example "1,2,3,4" or "-5,0,5".
 
-  Behavior (as tested):
-  spell every numeral using complete terms. If numbers aren't there or gaps show up,
-  or holds onto anything unfinished - like x, maybe even 3.5, instead of just 3
-  Extra commas or odd gaps - they can trip you up when passing along a clean number
-  with HTTP 400.
+    Behavior (as tested):
+      - If nums is missing or an empty string, respond with HTTP 400.
+      - Split nums by commas. After trimming spaces around each piece:
+          - Every token must be a valid integer string (optional leading minus
+            sign, then digits only).
+          - If you see a token that is empty, only spaces, contains letters,
+            or contains a decimal point (such as "x", "3.5", "" between two
+            commas, or "1, ,2"), respond with HTTP 400.
+      - When the list is valid and non-empty, convert the tokens to integers
+        and compute:
+          - min: the smallest integer in the list
+          - max: the largest integer in the list
+          - mean: the arithmetic mean as a floating-point number
+          - range: max - min
 
-  Begin with a look at what's going on inside
-  - min: lowest number seen in the group (full integer)
-    high number seen nearby - only a single whole figure
-  - typical count: common number setup where digits come after a dot
-  - spread: grab the biggest value, minus the smallest one
+        Return these in a JSON object with this exact shape:
 
-  The response JSON shape is:
-  {"lowest": number, "however": number, "therefore": number, "because": number}
+          {"min": number, "max": number, "mean": number, "range": number}
 
-  They might track little bunches of digits, sometimes tossing in a negative sign randomly
-  Go one thing at a time. Skip stacking info too deep.
+      - Tests cover a few simple cases:
+          - A basic positive list like "1,2,3,4".
+          - A list with negative values like "-5,0,5".
+          - A single-element list like "42".
+          - Whitespace around numbers that still form valid integers, such as
+            " 1, 2 ,3 ", which should be accepted.
+          - Clearly invalid inputs as described above, which should return
+            HTTP 400.
 
   Notes:
-  Focusing on what matters - leave behind anything that doesn't fit
-  timing tricks.
-  A logical spot for the core logic could sit directly within server/services/calculator.js
-  Jump to server/routes/advanced.js to handle routes or basic calls - go with this if it's your usual starting point
-  You can grab the tools from server/utils/array.js too - whenever they fit what you need, go ahead and use them.
-  You can search things right inside the folder, but give a tiny tool a go first - just see how it runs
-  Take a look at those earlier steps - now, how about seeing them another way?
+  - A straightforward approach is to add the route in server/routes/advanced.js
+    and keep any small helper logic alongside the other calculator utilities.
+  - You do not need to optimize for large inputs; the tests only use short
+    lists.
 
 difficulty: hard
 category: Feature
-node using express alongside stats: ""
+tags: [node, express, stats]
 parser_name: pytest
