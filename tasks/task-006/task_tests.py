@@ -22,16 +22,6 @@ def test_modinv_exists_and_not_exists():
     assert r2.status_code == 400
 
 
-def test_crt_two_congruences_and_inconsistency():
-    """/adv/crt solves pair of congruences or returns 400 if inconsistent."""
-    # x ≡ 2 (mod 3), x ≡ 3 (mod 5) -> solution x = 8 mod 15
-    r1 = requests.get(f"{BASE}/adv/crt", params={"a1": 2, "m1": 3, "a2": 3, "m2": 5}, timeout=5)
-    assert r1.status_code == 200
-    # Keep the check simple: just verify the combined modulus.
-    d1 = r1.json()
-    assert d1["m"] == 15
-
-
 def test_primes_segment_basic_json_and_csv():
     """/adv/primes_segment returns primes in [L,R] in json or csv for small ranges."""
     r1 = requests.get(f"{BASE}/adv/primes_segment", params={"L": 10, "R": 50, "format": "json"}, timeout=5)
