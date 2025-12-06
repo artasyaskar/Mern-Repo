@@ -5,7 +5,8 @@ task_description: |
   Requirements (as tested):
   - GET /adv/gcd and GET /adv/lcm
   - See if the number’s a full integer. If there's a dot - say, a=7.3 - send back error 400 straight off. Keep things brief. Block anything with decimals from the start. Precision counts, so no float values at all. Catch any . character quick. Just toss it out immediately. No need to keep going - rules are tight. So halt right when you see a piece show up.
-  - Outcomes should stay positive (like gcd(-8,12) gives 4, whereas lcm(-4,6) turns into 12).
+  - Outcomes should stay positive (like gcd(-8,12) gives 4, whereas lcm(-4,6) turns into 12), and both
+    endpoints respond with a JSON wrapper of the form {"result": value}.
 
   - GET /adv/egcd
   - Input: two whole numbers a and b. Output gives one Bézout relation for the tested pair.
@@ -15,14 +16,17 @@ task_description: |
   - GET /adv/lcm_many
   Submit digits split by commas.
   Behavior (as tested):
-  - Tests only assert that clearly invalid lists (like empty strings or non-integer
-    tokens) return HTTP 400.
+  - Successful results are returned as {"result": value}.
+  - Separate tests only assert that clearly invalid lists (like empty strings or
+    non-integer tokens) return HTTP 400.
 
   - GET /adv/primes_range
   - Needs n as a whole number; tests use a small range.
   Behavior (as tested):
   - When format is set to csv, respond with text/csv plus the header "prime", then list
     each prime number on its own line for the tested range (for example, up to 30).
+  - When format is set to json (in other tests outside this task), the endpoint responds
+    with a wrapper of the form {"result": [list of primes]}.
 
   Validation helpers:
   - Pick whole numbers only - use something like requireIntegers to block fractions or spelled-out words.
