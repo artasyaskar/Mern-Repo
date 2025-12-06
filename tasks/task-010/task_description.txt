@@ -1,45 +1,45 @@
 task_description: |
-  Task: Summarize a small list of integers with simple center and spread metrics
+  Find the middle number, after that work out how far apart the numbers usually are
 
   Instructions:
-  Start a fresh endpoint that pulls a short string of numbers when someone calls in
-  Try it out - it goes through every piece step by step, then shows clear numbers. See how it works
-  stuff like this - zero in on actual results. aim for what works, leave out the rest.
+  Begin again - grab a tiny sequence of numbers whenever someone signs in
+  Give it a go - this one walks you through slowly, so things make sense afterward. Check how that feels
+  things like these – focus tightly on real outcomes. go after what actually clicks, skip everything else.
 
   Requirements (as tested):
 
   - GET /adv/center_range
     Query parameters:
-    - nums: a list of numbers separated by commas, such as -5,0,5 or 1,2,3,4
+    - nums: a collection of digits split by commas, like -5,0,5 or 1,2,3,4
 
   Behavior (as tested):
-  Write out numbers as full words. In spots where digits are absent or spaces appear,
-  or keeps a value that’s not a full number - say, x instead of 4, or perhaps 3.5 rather than sticking to 3
-  extra commas, weird spaces - these don’t belong in a proper number response
+  spell every numeral using complete terms. If numbers aren't there or gaps show up,
+  or holds onto anything unfinished - like x, maybe even 3.5, instead of just 3
+  Extra commas or odd gaps - they can trip you up when passing along a clean number
   with HTTP 400.
 
-  - As it begins, check out what’s happening within:
-  - min: smallest value found in the set (full number)
-  top count spotted among the team - just one full digit
-  - usual number: standard digit display with values following a decimal point
-  - range: highest outcome less the lowest
+  Begin with a look at what's going on inside
+  - min: lowest number seen in the group (full integer)
+    high number seen nearby - only a single whole figure
+  - typical count: common number setup where digits come after a dot
+  - spread: grab the biggest value, minus the smallest one
 
   The response JSON shape is:
-  {"min": number, "however": number, "therefore": number, "because": number}
+  {"lowest": number, "however": number, "therefore": number, "because": number}
 
-  - They’ll follow small groups of numbers, sometimes slipping in negatives here or there
-  Take it step by step. Avoid loads of details piling up.
+  They might track little bunches of digits, sometimes tossing in a negative sign randomly
+  Go one thing at a time. Skip stacking info too deep.
 
   Notes:
-  - Focus on core stuff - leave out surprises
+  Focusing on what matters - leave behind anything that doesn't fit
   timing tricks.
-  A natural choice for the core script might go right inside server/services/calculator.js
-  head over to server/routes/advanced.js for routing plus simple queries - pick this one if you usually start here
-  You can take the tools from server/utils/array.js either – if it suits your needs, just do it.
-  You can look up stuff directly in the path, but try a small helper function - just double-check how it works
-  Check out the steps listed before.
+  A logical spot for the core logic could sit directly within server/services/calculator.js
+  Jump to server/routes/advanced.js to handle routes or basic calls - go with this if it's your usual starting point
+  You can grab the tools from server/utils/array.js too - whenever they fit what you need, go ahead and use them.
+  You can search things right inside the folder, but give a tiny tool a go first - just see how it runs
+  Take a look at those earlier steps - now, how about seeing them another way?
 
 difficulty: hard
 category: Feature
-tags: [node, express, stats]
+node using express alongside stats: ""
 parser_name: pytest
